@@ -143,7 +143,7 @@ def update(id):
             db = get_db()
             db.execute("UPDATE club SET name = ?" " WHERE id = ?", (name, id))
             db.commit()
-            return redirect(url_for("club.index"))
+            return redirect(url_for("index.index"))
 
     return render_template("club/update.html", club=club)
 
