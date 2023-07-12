@@ -79,7 +79,7 @@ def update(id):
             flash(error)
         else:
             db = get_db()
-            db.execute("UPDATE club SET name = ?" " WHERE id = ?", (club, id))
+            db.execute("UPDATE club SET name = ?" " WHERE id = ?", (name, id))
             db.commit()
             return redirect(url_for("club.index"))
 
