@@ -1,0 +1,18 @@
+{% extends 'base.html' %} {% block content %} {% if g.user %} {% if g.user['club_id'] %}
+<p>User is in a club</p>
+{% else %}
+
+<ul>
+	<li>
+		<a href="{{ url_for('club.create') }}">Create a club</a>
+	</li>
+	<li>
+		<a href="{{ url_for('club.join') }}">Join a club</a>
+	</li>
+</ul>
+
+{% endif %} {% else %}
+<p>How it works</p>
+<p>Register</p>
+<p>Login</p>
+{% endif %} {% endblock %}

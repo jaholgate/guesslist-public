@@ -8,7 +8,7 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY="dev",
-        DATABASE=os.path.join(app.instance_path, "flaskr.sqlite"),
+        DATABASE=os.path.join(app.instance_path, "guesslist.sqlite"),
     )
 
     if test_config is None:
@@ -37,9 +37,9 @@ def create_app(test_config=None):
 
     app.register_blueprint(auth.bp)
 
-    from . import blog
+    from . import index
 
-    app.register_blueprint(blog.bp)
+    app.register_blueprint(index.bp)
 
     from . import club
 
