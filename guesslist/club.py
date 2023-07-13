@@ -7,20 +7,20 @@ from guesslist.db import get_db
 bp = Blueprint("club", __name__, url_prefix="/club")
 
 
-@bp.route("/")
-def index():
-    db = get_db()
-    clubs = db.execute(
-        "SELECT club.id, name, created, admin_id, username"
-        " FROM club JOIN user ON club.admin_id = user.id"
-        " ORDER BY created DESC"
-    ).fetchall()
-    rounds = db.execute(
-        "SELECT round.id, number, round.name, description, round.created, admin_id"
-        " FROM round JOIN club ON round.club_id = club.id"
-        " ORDER BY number ASC"
-    ).fetchall()
-    return render_template("club/index.html", clubs=clubs, rounds=rounds)
+# @bp.route("/")
+# def index():
+#     db = get_db()
+#     clubs = db.execute(
+#         "SELECT club.id, name, created, admin_id, username"
+#         " FROM club JOIN user ON club.admin_id = user.id"
+#         " ORDER BY created DESC"
+#     ).fetchall()
+#     rounds = db.execute(
+#         "SELECT round.id, number, round.name, description, round.created, admin_id"
+#         " FROM round JOIN club ON round.club_id = club.id"
+#         " ORDER BY number ASC"
+#     ).fetchall()
+#     return render_template("club/index.html", clubs=clubs, rounds=rounds)
 
 
 @bp.route("/create", methods=("GET", "POST"))

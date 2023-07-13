@@ -20,6 +20,7 @@ def index():
             " ORDER BY number ASC",
             (g.user["club_id"],),
         ).fetchall()
+
         return render_template("index.html", club=club, rounds=rounds)
     else:
         return render_template("index.html")
