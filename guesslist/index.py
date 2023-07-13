@@ -15,7 +15,7 @@ def index():
             "SELECT id, name, admin_id FROM club WHERE id = ?", (g.user["club_id"],)
         ).fetchone()
         rounds = db.execute(
-            "SELECT id, number, name, description, created, starts, ends, club_id"
+            "SELECT id, number, name, description, created, club_id"
             " FROM round WHERE club_id = ?"
             " ORDER BY number ASC",
             (g.user["club_id"],),

@@ -16,7 +16,7 @@ def index():
         " ORDER BY created DESC"
     ).fetchall()
     rounds = db.execute(
-        "SELECT round.id, number, round.name, description, round.created, starts, ends, admin_id"
+        "SELECT round.id, number, round.name, description, round.created, admin_id"
         " FROM round JOIN club ON round.club_id = club.id"
         " ORDER BY number ASC"
     ).fetchall()
