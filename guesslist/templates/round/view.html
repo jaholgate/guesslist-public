@@ -2,20 +2,20 @@
 {% block content %}
 	<h1>{{ round['name'] }}</h1>
 	<p>{{ round['description'] }}</p>
+	<p>{{ song_count }}/{{ club_users_count }} members have submitted</p>
 
 <!-- If current round and not all submissions received -->
 
+
+
 	<!-- Show no of songs submitted / no of club members -->
 
-	<p>You submitted:</p>
-	{% if user_song %}
-	<img src="{{ user_song['image_url'] }}" alt="" width="100">
-	<p><a href="{{ user_song['spotify_external_url'] }}">{{ user_song["artist"] }} - {{ user_song["name"] }}</a></p>
 
-	{% else %}
+	{% if not songs and not user_song %}
 	<!-- If user has not submitted -->
 
 		<!-- Show song submit form -->
+		<h3>Submit your song</h3>
 		<form action="{{ url_for('round.submit', id=round['id']) }}"  method="post">
 			<label for="spotify_external_url">Spotify track URL</label>
 			<input name="spotify_external_url" id="spotify_external_url" value="{{ request.form['spotify_external_url'] }}" required />
@@ -24,13 +24,29 @@
 		</form>
 	{% endif %}
 	<!-- If user has submitted -->
-
-		<!-- Show submitted song -->
+	<!-- Show submitted song -->
+	{% if not songs and user_song %}
+		<h3>You submitted:</h3>
+		<img src="{{ user_song['image_url'] }}" alt="" width="100">
+		<p><a href="{{ user_song['spotify_external_url'] }}">{{ user_song["artist"] }} - {{ user_song["name"] }}</a></p>
+	{% endif %}
 
 <!-- If current round and all songs submitted -->
 
-	<!-- Show guess form -->
 
+	<!-- Show songs and guess form -->
+
+	{% if songs %}
+
+	{% for song in songs %}
+	<img src="{{ song['image_url'] }}" alt="" width="100">
+	<p><a href="{{ song['spotify_external_url'] }}">{{ song["artist"] }} - {{ song["name"] }}</a></p>
+
+	{% endfor %}
+	{% endif %}
+
+
+	
 	<!-- If all guesses submitted -->
 
 		<!-- Show guesses, answers, comments, scores -->

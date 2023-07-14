@@ -72,24 +72,45 @@ def view(id):
     db = get_db()
 
     # Get count of users in club
-    # club_users_count = db.execute(
-    #     "SELECT COUNT(*) FROM club WHERE club_id = ?", (g.user["club_id"])
-    # )["COUNT(*)"]
-    # # Get count of songs in round
-    # song_count = db.execute(
-    #     "SELECT COUNT(*) FROM song WHERE club_id = ? and round_id = ?", (g.user["club_id"])
-    # )["COUNT(*)"]
-    # # If users = songs, do stuff for guessing
-    # if club_users_count == song_count:
-    # songs = db.execute(
-    #     "SELECT artist, name, image_url, spotify_external_url, user_id, round_id, club_id"
-    #     " FROM song WHERE round_id = ? AND club_id = ? ",
-    #     (id, g.user["club_id"]),
-    #     ).fetchall()
+    club_users_count = db.execute(
+        "SELECT COUNT(*) FROM user WHERE club_id = ?", (g.user["club_id"],)
+    ).fetchone()["COUNT(*)"]
+    print(f"User count: {club_users_count}")
 
-    # return render_template("round/view.html", round=round, songs=songs)
+    # Get count of songs in round
+    song_count = db.execute(
+        "SELECT COUNT(*) FROM song WHERE club_id = ? and round_id = ?",
+        (g.user["club_id"], id),
+    ).fetchone()["COUNT(*)"]
+    print(f"Song count: {song_count}")
+    # If users = songs (everyone has submitted)
+    if club_users_count == song_count:
+        # Get songs
+        songs = db.execute(
+            "SELECT artist, name, image_url, spotify_external_url, user_id, round_id, club_id"
+            " FROM song WHERE round_id = ? AND club_id = ? ",
+            (id, g.user["club_id"]),
+        ).fetchall()
 
-    # Else
+        # Get guess count
+
+        # If guesses = songs (everyone has guessed)
+        # Get guesses
+        # Show results
+
+        # Else (not everyone has guessed)
+
+        # Show songs
+        # Show link to playlist
+        return render_template(
+            "round/view.html",
+            round=round,
+            songs=songs,
+            song_count=song_count,
+            club_users_count=club_users_count,
+        )
+
+    # Else (not everyone has submitted)
 
     # Get song from round with user's id
     user_song = db.execute(
@@ -102,12 +123,23 @@ def view(id):
     # Show the song info
 
     if user_song:
-        return render_template("round/view.html", round=round, user_song=user_song)
+        return render_template(
+            "round/view.html",
+            round=round,
+            user_song=user_song,
+            song_count=song_count,
+            club_users_count=club_users_count,
+        )
 
     # Else
     # Show the song submit form
     else:
-        return render_template("round/view.html", round=round)
+        return render_template(
+            "round/view.html",
+            round=round,
+            song_count=song_count,
+            club_users_count=club_users_count,
+        )
 
 
 @bp.route("/<int:id>/submit", methods=["POST"])
