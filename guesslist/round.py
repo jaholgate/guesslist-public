@@ -51,7 +51,7 @@ def get_round(id):
     current_round = (
         get_db()
         .execute(
-            "SELECT id, name, description, created, status, club_id"
+            "SELECT id, name, description, created, status, playlist_url, club_id"
             " FROM round"
             " WHERE id = ?",
             (id,),
@@ -90,6 +90,46 @@ def get_round_status(round_id):
         "SELECT status FROM round WHERE id = ?", (round_id,)
     ).fetchone()["status"]
     return round_status
+
+
+@bp.route("/<int:id>/playlist")
+@login_required
+def playlist(id):
+    round_id = id
+    round = get_round(round_id)
+    round_name = round["name"]
+    round_description = round["description"]
+
+    access_token = "BQAF13rwSxYTMW_OyCZGveVBYpsEe8qdqC-uA6ld6WMZcD5MnRthvmGhNVGmVTe5Fgh5SqflqFzYSF23j56q-B9xw3HV3GCYTRhPMQmZOtepa1s6No-CRjtL77IGMxfIFMTyV-sWH-7bowHVoZqUXT_nqPwj7EdieXO4DZUU_zw4wEUgFdmtj087gYiC0m_KHWd2xNMXfcbhIy7xSaWl5g9ls0TnTVrt6_dmg44WO-CKSq_CXeXPRjoxmtL0NzKNLcE"
+
+    # base URL of all Spotify API endpoints
+    BASE_URL = "https://api.spotify.com/v1/"
+
+    guesslist_spotify_user_id = "***REMOVED***"
+    headers = {
+        "Authorization": "Bearer {token}".format(token=access_token),
+        "Content-Type": "application/json",
+    }
+    json = {
+        "name": round_name,
+        "description": round_description,
+    }
+
+    r = requests.post(
+        BASE_URL + "users/" + guesslist_spotify_user_id + "/playlists",
+        headers=headers,
+        json=json,
+    )
+    playlist_url = r.json()["external_urls"]["spotify"]
+    print(playlist_url)
+    db = get_db()
+    db.execute(
+        "UPDATE round SET playlist_url = ?" " WHERE id = ?",
+        (playlist_url, round_id),
+    )
+    db.commit()
+
+    return redirect("/round/" + str(round_id))
 
 
 @bp.route("/<int:id>/")
@@ -161,6 +201,26 @@ def view(id):
         )
 
 
+def get_access_token():
+    AUTH_URL = "https://accounts.spotify.com/api/token"
+    auth_response = requests.post(
+        AUTH_URL,
+        {
+            "grant_type": "client_credentials",
+            "client_id": CLIENT_ID,
+            "client_secret": CLIENT_SECRET,
+        },
+    )
+
+    # convert the response to JSON
+    auth_response_data = auth_response.json()
+
+    # save the access token
+    access_token = auth_response_data["access_token"]
+
+    return access_token
+
+
 @bp.route("/<int:id>/submit", methods=["POST"])
 @login_required
 def submit(id):
@@ -175,21 +235,9 @@ def submit(id):
         if error is not None:
             flash(error)
         else:
-            AUTH_URL = "https://accounts.spotify.com/api/token"
-            auth_response = requests.post(
-                AUTH_URL,
-                {
-                    "grant_type": "client_credentials",
-                    "client_id": CLIENT_ID,
-                    "client_secret": CLIENT_SECRET,
-                },
-            )
+            # access_token = get_access_token()
 
-            # convert the response to JSON
-            auth_response_data = auth_response.json()
-
-            # save the access token
-            access_token = auth_response_data["access_token"]
+            access_token = "BQAF13rwSxYTMW_OyCZGveVBYpsEe8qdqC-uA6ld6WMZcD5MnRthvmGhNVGmVTe5Fgh5SqflqFzYSF23j56q-B9xw3HV3GCYTRhPMQmZOtepa1s6No-CRjtL77IGMxfIFMTyV-sWH-7bowHVoZqUXT_nqPwj7EdieXO4DZUU_zw4wEUgFdmtj087gYiC0m_KHWd2xNMXfcbhIy7xSaWl5g9ls0TnTVrt6_dmg44WO-CKSq_CXeXPRjoxmtL0NzKNLcE"
 
             headers = {"Authorization": "Bearer {token}".format(token=access_token)}
 
@@ -220,13 +268,47 @@ def submit(id):
             )
             db.commit()
 
+            # If all users have submitted songs
             if get_club_users_count(round_id) == get_song_count(round_id):
                 db = get_db()
+                # Update round status
                 db.execute(
                     "UPDATE round SET status = ?" " WHERE id = ?",
                     ("open_for_guesses", round_id),
                 )
                 db.commit()
+
+                # Create playlist
+                # access_token = get_access_token()
+
+                # access_token = "BQAF13rwSxYTMW_OyCZGveVBYpsEe8qdqC-uA6ld6WMZcD5MnRthvmGhNVGmVTe5Fgh5SqflqFzYSF23j56q-B9xw3HV3GCYTRhPMQmZOtepa1s6No-CRjtL77IGMxfIFMTyV-sWH-7bowHVoZqUXT_nqPwj7EdieXO4DZUU_zw4wEUgFdmtj087gYiC0m_KHWd2xNMXfcbhIy7xSaWl5g9ls0TnTVrt6_dmg44WO-CKSq_CXeXPRjoxmtL0NzKNLcE"
+
+                # round = get_round(round_id)
+                # round_name = round["name"]
+                # round_description = round["description"]
+
+                # guesslist_spotify_user_id = "***REMOVED***"
+                # headers = {
+                #     "Authorization": "Bearer {token}".format(token=access_token),
+                #     "Content-Type": "application/json",
+                # }
+                # json = {
+                #     "name": round_name,
+                #     "description": round_description,
+                # }
+
+                # r = requests.post(
+                #     BASE_URL + "users/" + guesslist_spotify_user_id + "/playlists",
+                #     headers=headers,
+                #     json=json,
+                # )
+                # playlist_url = r.json()["external_urls"]["spotify"]
+                # print(playlist_url)
+                # db.execute(
+                #     "UPDATE round SET status = ?" " WHERE id = ?",
+                #     (playlist_url, round_id),
+                # )
+                # db.commit()
 
             return redirect("/round/" + str(round_id))
 

@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS round (
   name TEXT NOT NULL,
   description NOT NULL,
   status TEXT NOT NULL DEFAULT 'pending',
+  playlist_url TEXT,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   club_id INTEGER NOT NULL,
   FOREIGN KEY (club_id) REFERENCES club (id)

@@ -3,11 +3,12 @@
 	<h1>{{ round['name'] }}</h1>
 	<p>{{ round['description'] }}</p>
 
-	{% if round['status'] == "pending" %}
+	<!-- {% if round['status'] == "pending" %}
 	<p>This round is not open yet.</p>
-	{% endif %}
+	{% endif %} -->
 
-	{% if round['status'] == "open_for_songs" %}
+	<!-- Below condition for TESTING only -->
+	{% if round['status'] == "pending" or round['status'] == "open_for_songs" %}
 		<p>{{ song_count }}/{{ club_users_count }} members have submitted</p>
 		<!-- If user has submitted -->
 		<!-- Show submitted song -->
@@ -47,6 +48,9 @@
 	<!-- Show songs and guess form -->
 
 	{% if round['status'] == "open_for_guesses" %}
+	<h3>Listen to playlist:</h3>
+	<a href="{{ url_for('round.playlist', id=round['id'])}}">Generate playlist</a>
+	<a href="{{ round['playlist_url']}}">Playlist link</a>
 	<h3>Guess who submitted each song</h3>
 	{% for song in songs %}
 	<img src="{{ song['image_url'] }}" alt="" width="100">
