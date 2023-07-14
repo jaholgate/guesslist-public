@@ -154,5 +154,6 @@ def delete(id):
     get_club(id)
     db = get_db()
     db.execute("DELETE FROM club WHERE id = ?", (id,))
+    # TODO remove club_id from all users in club?
     db.commit()
-    return redirect(url_for("club.index"))
+    return redirect(url_for("index.index"))

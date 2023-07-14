@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS round (
   number INTEGER NOT NULL DEFAULT 1,
   name TEXT NOT NULL,
   description NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   club_id INTEGER NOT NULL,
   FOREIGN KEY (club_id) REFERENCES club (id)
@@ -38,7 +39,7 @@ CREATE TABLE IF NOT EXISTS song (
   artist TEXT NOT NULL,
   name TEXT NOT NULL,
   image_url TEXT,
-  spotify_id TEXT NOT NULL,
+  spotify_track_id TEXT NOT NULL,
   spotify_external_url TEXT NOT NULL,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   user_id NOT NULL,
@@ -47,5 +48,16 @@ CREATE TABLE IF NOT EXISTS song (
   FOREIGN KEY (user_id) REFERENCES user (id),
   FOREIGN KEY (round_id) REFERENCES round (id),
   FOREIGN KEY (club_id) REFERENCES club (id)
+);
 
+CREATE TABLE IF NOT EXISTS guess (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  guess_user_id NOT NULL,
+  user_id NOT NULL,
+  round_id INTEGER NOT NULL,
+  club_id INTEGER NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES user (id),
+  FOREIGN KEY (round_id) REFERENCES round (id),
+  FOREIGN KEY (club_id) REFERENCES club (id)
 );

@@ -26,6 +26,9 @@
 			<ul>
 				<li><a class="action" href="{{ url_for('club.update', id=club['id']) }}">Manage club</a></li>
 				<li><a class="action" href="{{ url_for('round.add') }}">Add round</a></li>
+				{% if rounds and rounds[0]['status'] == 'pending' %}
+					<li><a class="action" href="{{ url_for('round.start', id=rounds[0]['id']) }}">Open club / start first round</a></li>
+				{% endif %}
 			</ul>
 		{% endif %}
 		{% if rounds %}
@@ -34,8 +37,12 @@
 				<article class="club">
 					<header>
 						<div>
-							<a href="{{ url_for('round.view', id=round['id']) }}"><h3>{{ round['number'] }} {{ round['name'] }}</h3></a>
-							<p>{{ round['description'] }}</p>
+							<h3>{{ round['number'] }} <a href="{{ url_for('round.view', id=round['id']) }}">{{ round['name'] }}</h3></a>
+							<ul>
+								<li>Description: {{ round['description'] }}</li>
+								<li>Status: {{ round['status'] }}</li>
+							</ul>
+						
 						</div>
 						<!-- {% if g.user['id'] == club['admin_id'] %}
 						<a class="action" href="{{ url_for('club.update', id=club['id']) }}">Manage</a>

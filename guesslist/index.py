@@ -15,12 +15,11 @@ def index():
             "SELECT id, name, admin_id FROM club WHERE id = ?", (g.user["club_id"],)
         ).fetchone()
         rounds = db.execute(
-            "SELECT id, number, name, description, created, club_id"
+            "SELECT id, number, name, description, status, created, club_id"
             " FROM round WHERE club_id = ?"
             " ORDER BY number ASC",
             (g.user["club_id"],),
         ).fetchall()
-
         return render_template("index.html", club=club, rounds=rounds)
     else:
         return render_template("index.html")
