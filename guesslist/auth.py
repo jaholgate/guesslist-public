@@ -23,6 +23,7 @@ def register():
         email = request.form["email"]
         username = request.form["username"]
         password = request.form["password"]
+        club_id = request.form["club_id"]
         db = get_db()
         error = None
 
@@ -46,8 +47,29 @@ def register():
                 user = db.execute(
                     "SELECT * FROM user WHERE email = ?", (email,)
                 ).fetchone()
+
+                # If the user registered with a club id
+                if club_id:
+                    # Check if club id exists
+                    club_id_check = db.execute(
+                        "SELECT id FROM club WHERE id = ?", (club_id,)
+                    ).fetchone()
+                    if club_id_check:
+                        # If true, add club_id to user record
+                        db.execute(
+                            "UPDATE user SET club_id = ?" " WHERE id = ?",
+                            (club_id, user["id"]),
+                        )
+                        db.commit()
+                    else:
+                        error = (
+                            "Successfully registered, but your club ID was not found."
+                        )
+
+                # Log the user in
                 session.clear()
                 session["user_id"] = user["id"]
+                flash(error)
                 return redirect(url_for("index"))
 
         flash(error)
