@@ -15,7 +15,7 @@
 		{% if user_song %}
 			<h3>You submitted:</h3>
 			<img src="{{ user_song['image_url'] }}" alt="" width="100">
-			<p><a href="{{ user_song['spotify_external_url'] }}">{{ user_song["artist"] }} - {{ user_song["name"] }}</a></p>
+			<p><a href="http://open.spotify.com/track/{{ user_song['spotify_track_id'] }}">{{ user_song["artist"] }} - {{ user_song["name"] }}</a></p>
 		{% endif %}
 
 		<!-- If user has not submitted -->
@@ -23,8 +23,8 @@
 		{% if not user_song %}
 		<h3>Submit your song</h3>
 		<form action="{{ url_for('round.submit', id=round['id']) }}"  method="post">
-			<label for="spotify_external_url">Spotify track URL</label>
-			<input name="spotify_external_url" id="spotify_external_url" value="{{ request.form['spotify_external_url'] }}" required />
+			<label for="spotify_track_url">Spotify track URL</label>
+			<input name="spotify_track_url" id="spotify_track_url" value="{{ request.form['spotify_track_url'] }}" required />
 			<p>E.g.</p>
 			<p>https://open.spotify.com/track/7igDDKaYTMkV5xbse143IW</p>
 			<p>https://open.spotify.com/track/4QQEzkxcONBthDLfzqIh9S?si=29b08f1ed89646f5</p>
@@ -54,7 +54,7 @@
 	<h3>Guess who submitted each song</h3>
 	{% for song in songs %}
 	<img src="{{ song['image_url'] }}" alt="" width="100">
-	<p><a href="{{ song['spotify_external_url'] }}">{{ song["artist"] }} - {{ song["name"] }}</a></p>
+	<p><a href="http://open.spotify.com/track/{{ song['spotify_track_id'] }}">{{ song["artist"] }} - {{ song["name"] }}</a></p>
 
 	{% endfor %}
 	{% endif %}

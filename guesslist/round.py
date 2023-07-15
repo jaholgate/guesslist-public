@@ -1,5 +1,7 @@
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for
 import requests
+import base64
+import random
 from werkzeug.exceptions import abort
 
 from guesslist.auth import login_required
@@ -7,8 +9,14 @@ from guesslist.db import get_db
 
 bp = Blueprint("round", __name__, url_prefix="/round")
 
+BASE_URL = "https://api.spotify.com/v1/"
+SPOTIFY_USER_ID = "***REMOVED***"
 CLIENT_ID = "***REMOVED***"
 CLIENT_SECRET = "***REMOVED***"
+REFRESH_TOKEN = "***REMOVED***"
+CLIENT_ID_SECRET_B64 = (
+    "Basic " + base64.b64encode((CLIENT_ID + ":" + CLIENT_SECRET).encode()).decode()
+)
 
 
 @bp.route("/add", methods=("GET", "POST"))
@@ -100,12 +108,8 @@ def playlist(id):
     round_name = round["name"]
     round_description = round["description"]
 
-    access_token = "BQAF13rwSxYTMW_OyCZGveVBYpsEe8qdqC-uA6ld6WMZcD5MnRthvmGhNVGmVTe5Fgh5SqflqFzYSF23j56q-B9xw3HV3GCYTRhPMQmZOtepa1s6No-CRjtL77IGMxfIFMTyV-sWH-7bowHVoZqUXT_nqPwj7EdieXO4DZUU_zw4wEUgFdmtj087gYiC0m_KHWd2xNMXfcbhIy7xSaWl5g9ls0TnTVrt6_dmg44WO-CKSq_CXeXPRjoxmtL0NzKNLcE"
+    access_token = refresh_access_token()
 
-    # base URL of all Spotify API endpoints
-    BASE_URL = "https://api.spotify.com/v1/"
-
-    guesslist_spotify_user_id = "***REMOVED***"
     headers = {
         "Authorization": "Bearer {token}".format(token=access_token),
         "Content-Type": "application/json",
@@ -116,12 +120,38 @@ def playlist(id):
     }
 
     r = requests.post(
-        BASE_URL + "users/" + guesslist_spotify_user_id + "/playlists",
+        BASE_URL + "users/" + SPOTIFY_USER_ID + "/playlists",
         headers=headers,
         json=json,
+    ).json()
+
+    playlist_id = r["id"]
+    playlist_url = r["external_urls"]["spotify"]
+
+    db = get_db()
+    songs = db.execute(
+        "SELECT spotify_track_id" " FROM song WHERE round_id = ? AND club_id = ? ",
+        (round_id, g.user["club_id"]),
+    ).fetchall()
+
+    uri_list = []
+
+    for song in songs:
+        uri_list.append("spotify:track:" + song["spotify_track_id"])
+
+    random.shuffle(uri_list)
+
+    uri_string = ",".join(uri_list)
+
+    headers = {"Authorization": "Bearer {token}".format(token=access_token)}
+
+    r = requests.post(
+        BASE_URL + "playlists/" + playlist_id + "/tracks?uris=" + uri_string,
+        headers=headers,
+        # json=json,
     )
-    playlist_url = r.json()["external_urls"]["spotify"]
-    print(playlist_url)
+    print(r.json())
+
     db = get_db()
     db.execute(
         "UPDATE round SET playlist_url = ?" " WHERE id = ?",
@@ -146,7 +176,7 @@ def view(id):
     if get_round_status(round_id) == "open_for_guesses":
         # Get songs
         songs = db.execute(
-            "SELECT artist, name, image_url, spotify_external_url, user_id, round_id, club_id"
+            "SELECT artist, name, image_url, spotify_track_id, user_id, round_id, club_id"
             " FROM song WHERE round_id = ? AND club_id = ? ",
             (id, g.user["club_id"]),
         ).fetchall()
@@ -173,7 +203,7 @@ def view(id):
 
     # Get song from round with user's id
     user_song = db.execute(
-        "SELECT artist, name, image_url, spotify_external_url, user_id, round_id, club_id"
+        "SELECT artist, name, image_url, spotify_track_id, user_id, round_id, club_id"
         " FROM song WHERE user_id = ? AND round_id = ? AND club_id = ?",
         (g.user["id"], id, g.user["club_id"]),
     ).fetchone()
@@ -201,24 +231,39 @@ def view(id):
         )
 
 
-def get_access_token():
-    AUTH_URL = "https://accounts.spotify.com/api/token"
-    auth_response = requests.post(
-        AUTH_URL,
-        {
-            "grant_type": "client_credentials",
-            "client_id": CLIENT_ID,
-            "client_secret": CLIENT_SECRET,
-        },
+# def get_access_token():
+#     AUTH_URL = "https://accounts.spotify.com/api/token"
+#     auth_response = requests.post(
+#         AUTH_URL,
+#         {
+#             "grant_type": "client_credentials",
+#             "client_id": CLIENT_ID,
+#             "client_secret": CLIENT_SECRET,
+#         },
+#     )
+
+#     # convert the response to JSON
+#     auth_response_data = auth_response.json()
+
+#     # save the access token
+#     access_token = auth_response_data["access_token"]
+
+#     return access_token
+
+
+def refresh_access_token():
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": CLIENT_ID_SECRET_B64,
+    }
+
+    data = {"grant_type": "refresh_token", "refresh_token": REFRESH_TOKEN}
+
+    r = requests.post(
+        "https://accounts.spotify.com/api/token", headers=headers, data=data
     )
-
-    # convert the response to JSON
-    auth_response_data = auth_response.json()
-
-    # save the access token
-    access_token = auth_response_data["access_token"]
-
-    return access_token
+    r = r.json()
+    return r["access_token"]
 
 
 @bp.route("/<int:id>/submit", methods=["POST"])
@@ -226,25 +271,20 @@ def get_access_token():
 def submit(id):
     round_id = id
     if request.method == "POST":
-        spotify_external_url = request.form["spotify_external_url"]
+        spotify_track_url = request.form["spotify_track_url"]
         error = None
 
-        if not spotify_external_url:
+        if not spotify_track_url:
             error = "Spotify track URL is required."
 
         if error is not None:
             flash(error)
         else:
-            # access_token = get_access_token()
-
-            access_token = "BQAF13rwSxYTMW_OyCZGveVBYpsEe8qdqC-uA6ld6WMZcD5MnRthvmGhNVGmVTe5Fgh5SqflqFzYSF23j56q-B9xw3HV3GCYTRhPMQmZOtepa1s6No-CRjtL77IGMxfIFMTyV-sWH-7bowHVoZqUXT_nqPwj7EdieXO4DZUU_zw4wEUgFdmtj087gYiC0m_KHWd2xNMXfcbhIy7xSaWl5g9ls0TnTVrt6_dmg44WO-CKSq_CXeXPRjoxmtL0NzKNLcE"
+            access_token = refresh_access_token()
 
             headers = {"Authorization": "Bearer {token}".format(token=access_token)}
 
-            # base URL of all Spotify API endpoints
-            BASE_URL = "https://api.spotify.com/v1/"
-
-            spotify_track_id = spotify_external_url.replace(
+            spotify_track_id = spotify_track_url.replace(
                 "https://open.spotify.com/track/", ""
             )
 
@@ -253,14 +293,13 @@ def submit(id):
 
             db = get_db()
             db.execute(
-                "INSERT INTO song (artist, name, image_url, spotify_track_id, spotify_external_url, user_id, round_id, club_id)"
+                "INSERT INTO song (artist, name, image_url, spotify_track_id, user_id, round_id, club_id)"
                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     r["artists"][0]["name"],
                     r["name"],
                     r["album"]["images"][0]["url"],
-                    spotify_track_id,
-                    spotify_external_url,
+                    r["id"],
                     g.user["id"],
                     round_id,
                     g.user["club_id"],
@@ -287,7 +326,7 @@ def submit(id):
                 # round_name = round["name"]
                 # round_description = round["description"]
 
-                # guesslist_spotify_user_id = "***REMOVED***"
+                # SPOTIFY_USER_ID = "***REMOVED***"
                 # headers = {
                 #     "Authorization": "Bearer {token}".format(token=access_token),
                 #     "Content-Type": "application/json",
@@ -298,7 +337,7 @@ def submit(id):
                 # }
 
                 # r = requests.post(
-                #     BASE_URL + "users/" + guesslist_spotify_user_id + "/playlists",
+                #     BASE_URL + "users/" + SPOTIFY_USER_ID + "/playlists",
                 #     headers=headers,
                 #     json=json,
                 # )

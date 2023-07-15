@@ -40,7 +40,6 @@ CREATE TABLE IF NOT EXISTS song (
   name TEXT NOT NULL,
   image_url TEXT,
   spotify_track_id TEXT NOT NULL,
-  spotify_external_url TEXT NOT NULL,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   user_id NOT NULL,
   round_id INTEGER NOT NULL,
