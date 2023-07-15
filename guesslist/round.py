@@ -38,25 +38,28 @@ def add():
         if error is not None:
             flash(error)
         else:
-            latest_round_number = 0
-            db = get_db()
-            # Get the most recently created round
-            latest_round = db.execute(
-                "SELECT number" " FROM round WHERE club_id = ?" " ORDER BY number DESC",
-                (g.user["club_id"],),
-            ).fetchone()
-            # If there is one
-            if latest_round:
-                latest_round_number = latest_round["number"]
-            db.execute(
-                "INSERT INTO round (number, name, description, club_id)"
-                " VALUES (?, ?, ?, ?)",
-                (latest_round_number + 1, name, description, g.user["club_id"]),
-            )
-            db.commit()
+            add_round(name, description, g.user["club_id"])
             return redirect(url_for("index.index"))
 
     return render_template("round/add.html")
+
+
+def add_round(name, description, club_id):
+    latest_round_number = 0
+    db = get_db()
+    # Get the most recently created round
+    latest_round = db.execute(
+        "SELECT number" " FROM round WHERE club_id = ?" " ORDER BY number DESC",
+        (g.user["club_id"],),
+    ).fetchone()
+    # If there is one
+    if latest_round:
+        latest_round_number = latest_round["number"]
+    db.execute(
+        "INSERT INTO round (number, name, description, club_id)" " VALUES (?, ?, ?, ?)",
+        (latest_round_number + 1, name, description, club_id),
+    )
+    db.commit()
 
 
 @bp.route("/<int:id>/")

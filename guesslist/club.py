@@ -3,6 +3,7 @@ from werkzeug.exceptions import abort
 
 from guesslist.auth import login_required
 from guesslist.db import get_db
+from guesslist.round import add_round
 
 bp = Blueprint("club", __name__, url_prefix="/club")
 
@@ -39,26 +40,43 @@ def create():
         if error is not None:
             flash(error)
         else:
+            user_id = g.user["id"]
             db = get_db()
             db.execute(
                 "INSERT INTO club (name, admin_id)" " VALUES (?, ?)",
-                (name, g.user["id"]),
+                (name, user_id),
             )
             db.commit()
-            club = (
-                get_db()
-                .execute(
-                    "SELECT club.id"
-                    " FROM club JOIN user ON club.admin_id = user.id"
-                    " WHERE user.id = ?",
-                    (g.user["id"],),
-                )
-                .fetchone()
-            )
+            club = db.execute(
+                "SELECT club.id"
+                " FROM club JOIN user ON club.admin_id = user.id"
+                " WHERE user.id = ?",
+                (user_id,),
+            ).fetchone()
             db.execute(
-                "UPDATE user SET club_id = ?" " WHERE id = ?", (club[0], g.user["id"])
+                "UPDATE user SET club_id = ?" " WHERE id = ?", (club[0], user_id)
             )
             db.commit()
+
+            starter_rounds = [
+                {"name": "Y2K", "description": "Songs released 1999-2001"},
+                {"name": "Tree Hugger", "description": "Songs mentioning nature"},
+                {
+                    "name": "Cover Up",
+                    "description": "Songs that are a cover of another song",
+                },
+                {"name": "Road Trip", "description": "Songs about cars or driving"},
+                {"name": "Hello, Numan", "description": "Best of Gary"},
+            ]
+
+            # TODO fix round numbering - currently '1' for each round created
+            for starter_round in starter_rounds:
+                add_round(
+                    starter_round["name"],
+                    starter_round["description"],
+                    user_id,
+                )
+
             return redirect(url_for("index.index"))
 
     return render_template("club/create.html")
