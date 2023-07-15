@@ -9,6 +9,7 @@ from guesslist.db import get_db
 
 bp = Blueprint("round", __name__, url_prefix="/round")
 
+# TODO Store this stuff somewhere else
 BASE_URL = "https://api.spotify.com/v1/"
 SPOTIFY_USER_ID = "***REMOVED***"
 CLIENT_ID = "***REMOVED***"
@@ -22,6 +23,7 @@ CLIENT_ID_SECRET_B64 = (
 @bp.route("/add", methods=("GET", "POST"))
 @login_required
 def add():
+    # For admin to add a round to club
     if request.method == "POST":
         name = request.form["name"]
         description = request.form["description"]
@@ -38,10 +40,12 @@ def add():
         else:
             latest_round_number = 0
             db = get_db()
+            # Get the most recently created round
             latest_round = db.execute(
                 "SELECT number" " FROM round WHERE club_id = ?" " ORDER BY number DESC",
                 (g.user["club_id"],),
             ).fetchone()
+            # If there is one
             if latest_round:
                 latest_round_number = latest_round["number"]
             db.execute(
@@ -55,116 +59,10 @@ def add():
     return render_template("round/add.html")
 
 
-def get_round(id):
-    current_round = (
-        get_db()
-        .execute(
-            "SELECT id, name, description, created, status, playlist_url, club_id"
-            " FROM round"
-            " WHERE id = ?",
-            (id,),
-        )
-        .fetchone()
-    )
-
-    if current_round is None:
-        abort(404, f"round id {id} doesn't exist.")
-
-    return current_round
-
-
-def get_club_users_count(round_id):
-    # Get count of users in club
-    db = get_db()
-    club_users_count = db.execute(
-        "SELECT COUNT(*) FROM user WHERE club_id = ?", (g.user["club_id"],)
-    ).fetchone()["COUNT(*)"]
-    return club_users_count
-
-
-def get_song_count(round_id):
-    # Get count of songs in round
-    db = get_db()
-    song_count = db.execute(
-        "SELECT COUNT(*) FROM song WHERE club_id = ? and round_id = ?",
-        (g.user["club_id"], round_id),
-    ).fetchone()["COUNT(*)"]
-    return song_count
-
-
-def get_round_status(round_id):
-    db = get_db()
-    round_status = db.execute(
-        "SELECT status FROM round WHERE id = ?", (round_id,)
-    ).fetchone()["status"]
-    return round_status
-
-
-@bp.route("/<int:id>/playlist")
-@login_required
-def playlist(id):
-    round_id = id
-    round = get_round(round_id)
-    round_name = round["name"]
-    round_description = round["description"]
-
-    access_token = refresh_access_token()
-
-    headers = {
-        "Authorization": "Bearer {token}".format(token=access_token),
-        "Content-Type": "application/json",
-    }
-    json = {
-        "name": round_name,
-        "description": round_description,
-    }
-
-    r = requests.post(
-        BASE_URL + "users/" + SPOTIFY_USER_ID + "/playlists",
-        headers=headers,
-        json=json,
-    ).json()
-
-    playlist_id = r["id"]
-    playlist_url = r["external_urls"]["spotify"]
-
-    db = get_db()
-    songs = db.execute(
-        "SELECT spotify_track_id" " FROM song WHERE round_id = ? AND club_id = ? ",
-        (round_id, g.user["club_id"]),
-    ).fetchall()
-
-    uri_list = []
-
-    for song in songs:
-        uri_list.append("spotify:track:" + song["spotify_track_id"])
-
-    random.shuffle(uri_list)
-
-    uri_string = ",".join(uri_list)
-
-    headers = {"Authorization": "Bearer {token}".format(token=access_token)}
-
-    r = requests.post(
-        BASE_URL + "playlists/" + playlist_id + "/tracks?uris=" + uri_string,
-        headers=headers,
-        # json=json,
-    )
-    print(r.json())
-
-    db = get_db()
-    db.execute(
-        "UPDATE round SET playlist_url = ?" " WHERE id = ?",
-        (playlist_url, round_id),
-    )
-    db.commit()
-
-    return redirect("/round/" + str(round_id))
-
-
 @bp.route("/<int:id>/")
 @login_required
 def view(id):
+    # Defines the round view screen depending on round status
     round_id = id
     round = get_round(round_id)
     db = get_db()
@@ -231,26 +129,6 @@ def view(id):
         )
 
 
-# def get_access_token():
-#     AUTH_URL = "https://accounts.spotify.com/api/token"
-#     auth_response = requests.post(
-#         AUTH_URL,
-#         {
-#             "grant_type": "client_credentials",
-#             "client_id": CLIENT_ID,
-#             "client_secret": CLIENT_SECRET,
-#         },
-#     )
-
-#     # convert the response to JSON
-#     auth_response_data = auth_response.json()
-
-#     # save the access token
-#     access_token = auth_response_data["access_token"]
-
-#     return access_token
-
-
 def refresh_access_token():
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -259,10 +137,10 @@ def refresh_access_token():
 
     data = {"grant_type": "refresh_token", "refresh_token": REFRESH_TOKEN}
 
+    # POST request to Spotify API to request new access token. Format response as JSON
     r = requests.post(
         "https://accounts.spotify.com/api/token", headers=headers, data=data
-    )
-    r = r.json()
+    ).json()
     return r["access_token"]
 
 
@@ -271,6 +149,7 @@ def refresh_access_token():
 def submit(id):
     round_id = id
     if request.method == "POST":
+        # TODO Add error handling
         spotify_track_url = request.form["spotify_track_url"]
         error = None
 
@@ -280,21 +159,26 @@ def submit(id):
         if error is not None:
             flash(error)
         else:
+            # Get new access token for Spotify
             access_token = refresh_access_token()
 
             headers = {"Authorization": "Bearer {token}".format(token=access_token)}
 
+            # Remove the start of the URL to get the track id
             spotify_track_id = spotify_track_url.replace(
                 "https://open.spotify.com/track/", ""
             )
 
-            r = requests.get(BASE_URL + "tracks/" + spotify_track_id, headers=headers)
-            r = r.json()
+            # GET track info from Spotify. Format response as JSON
+            r = requests.get(
+                BASE_URL + "tracks/" + spotify_track_id, headers=headers
+            ).json()
 
             db = get_db()
+            # Add song to database
             db.execute(
                 "INSERT INTO song (artist, name, image_url, spotify_track_id, user_id, round_id, club_id)"
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                " VALUES (?, ?, ?, ?, ?, ?, ?)",
                 (
                     r["artists"][0]["name"],
                     r["name"],
@@ -318,36 +202,66 @@ def submit(id):
                 db.commit()
 
                 # Create playlist
-                # access_token = get_access_token()
 
-                # access_token = "BQAF13rwSxYTMW_OyCZGveVBYpsEe8qdqC-uA6ld6WMZcD5MnRthvmGhNVGmVTe5Fgh5SqflqFzYSF23j56q-B9xw3HV3GCYTRhPMQmZOtepa1s6No-CRjtL77IGMxfIFMTyV-sWH-7bowHVoZqUXT_nqPwj7EdieXO4DZUU_zw4wEUgFdmtj087gYiC0m_KHWd2xNMXfcbhIy7xSaWl5g9ls0TnTVrt6_dmg44WO-CKSq_CXeXPRjoxmtL0NzKNLcE"
+                # Get round name and description
+                round = get_round(round_id)
+                round_name = round["name"]
+                round_description = round["description"]
 
-                # round = get_round(round_id)
-                # round_name = round["name"]
-                # round_description = round["description"]
+                headers = {
+                    "Authorization": "Bearer {token}".format(token=access_token),
+                    "Content-Type": "application/json",
+                }
+                json = {
+                    "name": round_name,
+                    "description": round_description,
+                }
 
-                # SPOTIFY_USER_ID = "***REMOVED***"
-                # headers = {
-                #     "Authorization": "Bearer {token}".format(token=access_token),
-                #     "Content-Type": "application/json",
-                # }
-                # json = {
-                #     "name": round_name,
-                #     "description": round_description,
-                # }
+                # POST new playlist to the guesslist Spotify user. Format response as JSON
+                r = requests.post(
+                    BASE_URL + "users/" + SPOTIFY_USER_ID + "/playlists",
+                    headers=headers,
+                    json=json,
+                ).json()
 
-                # r = requests.post(
-                #     BASE_URL + "users/" + SPOTIFY_USER_ID + "/playlists",
-                #     headers=headers,
-                #     json=json,
-                # )
-                # playlist_url = r.json()["external_urls"]["spotify"]
-                # print(playlist_url)
-                # db.execute(
-                #     "UPDATE round SET status = ?" " WHERE id = ?",
-                #     (playlist_url, round_id),
-                # )
-                # db.commit()
+                playlist_id = r["id"]
+                playlist_url = r["external_urls"]["spotify"]
+
+                # Get songs for current round
+                songs = get_songs_this_round(round_id)
+
+                # List to store track URIs
+                uri_list = []
+
+                # For each song, construct the URI from the track id and append to list
+                for song in songs:
+                    uri_list.append("spotify:track:" + song["spotify_track_id"])
+
+                # Randomly shuffle the list to make it more difficult for users to guess who submitted what song
+                random.shuffle(uri_list)
+
+                # Create string containing commma-separated list of URIs
+                uri_string = ",".join(uri_list)
+
+                headers = {"Authorization": "Bearer {token}".format(token=access_token)}
+
+                # POST tracks to playlist
+                r = requests.post(
+                    BASE_URL
+                    + "playlists/"
+                    + playlist_id
+                    + "/tracks?uris="
+                    + uri_string,
+                    headers=headers,
+                )
+
+                # Add the playlist URL to the round in the database
+                db = get_db()
+                db.execute(
+                    "UPDATE round SET playlist_url = ?" " WHERE id = ?",
+                    (playlist_url, round_id),
+                )
+                db.commit()
 
             return redirect("/round/" + str(round_id))
 
@@ -355,6 +269,7 @@ def submit(id):
 @bp.route("/<int:id>/start")
 @login_required
 def start(id):
+    # For the admin to start the first round in a club
     round_id = id
     db = get_db()
     db.execute(
@@ -364,6 +279,60 @@ def start(id):
     db.commit()
 
     return redirect(url_for("index.index"))
+
+
+def get_club_users_count(round_id):
+    # Get count of users in club
+    db = get_db()
+    club_users_count = db.execute(
+        "SELECT COUNT(*) FROM user WHERE club_id = ?", (g.user["club_id"],)
+    ).fetchone()["COUNT(*)"]
+    return club_users_count
+
+
+def get_round(id):
+    current_round = (
+        get_db()
+        .execute(
+            "SELECT id, name, description, created, status, playlist_url, club_id"
+            " FROM round"
+            " WHERE id = ?",
+            (id,),
+        )
+        .fetchone()
+    )
+
+    if current_round is None:
+        abort(404, f"round id {id} doesn't exist.")
+
+    return current_round
+
+
+def get_round_status(round_id):
+    db = get_db()
+    round_status = db.execute(
+        "SELECT status FROM round WHERE id = ?", (round_id,)
+    ).fetchone()["status"]
+    return round_status
+
+
+def get_song_count(round_id):
+    # Get count of songs in round
+    db = get_db()
+    song_count = db.execute(
+        "SELECT COUNT(*) FROM song WHERE club_id = ? and round_id = ?",
+        (g.user["club_id"], round_id),
+    ).fetchone()["COUNT(*)"]
+    return song_count
+
+
+def get_songs_this_round(round_id):
+    db = get_db()
+    songs = db.execute(
+        "SELECT spotify_track_id" " FROM song WHERE round_id = ? AND club_id = ? ",
+        (round_id, g.user["club_id"]),
+    ).fetchall()
+    return songs
 
 
 # @bp.route("/<int:id>/update", methods=("GET", "POST"))
