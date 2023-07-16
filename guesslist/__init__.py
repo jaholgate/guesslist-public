@@ -1,6 +1,7 @@
 import os
 
 from flask import Flask
+from flask_hashids import HashidMixin, Hashids
 
 
 def create_app(test_config=None):
@@ -9,7 +10,12 @@ def create_app(test_config=None):
     app.config.from_mapping(
         SECRET_KEY="dev",
         DATABASE=os.path.join(app.instance_path, "guesslist.sqlite"),
+        HASHIDS_ALPHABET="ABCDEFGHIJKLMNPQRSTUVWXYZ123456789",
+        HASHIDS_MIN_LENGTH="6",
+        HASHIDS_SALT="music for chameleons",
     )
+
+    hashids = Hashids(app)
 
     if test_config is None:
         # load the instance config, if it exists, when not testing

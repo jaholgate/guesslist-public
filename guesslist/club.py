@@ -7,7 +7,6 @@ from guesslist.round import add_round
 
 bp = Blueprint("club", __name__, url_prefix="/club")
 
-
 # @bp.route("/")
 # def index():
 #     db = get_db()
@@ -42,6 +41,22 @@ def create():
         else:
             user_id = g.user["id"]
             db = get_db()
+
+            # Check if any clubs have been created yet
+            clubs = db.execute(
+                "SELECT COUNT(*) FROM club",
+            ).fetchone()["COUNT(*)"]
+            print(clubs)
+
+            # If not, start round IDs from 1000 to avoid duplication of club IDs
+            if clubs == 0:
+                print("updating seq")
+                db.execute(
+                    "INSERT INTO sqlite_sequence (name, seq)" " VALUES (?, ?)",
+                    ("round", 1000),
+                )
+                db.commit()
+
             db.execute(
                 "INSERT INTO club (name, admin_id)" " VALUES (?, ?)",
                 (name, user_id),
@@ -143,7 +158,7 @@ def get_club(id, check_author=True):
     return club
 
 
-@bp.route("/<int:id>/update", methods=("GET", "POST"))
+@bp.route("/<hashid:id>/update", methods=("GET", "POST"))
 @login_required
 def update(id):
     club = get_club(id)
@@ -166,7 +181,7 @@ def update(id):
     return render_template("club/update.html", club=club)
 
 
-@bp.route("/<int:id>/delete", methods=("POST",))
+@bp.route("/<hashid:id>/delete", methods=("POST",))
 @login_required
 def delete(id):
     get_club(id)

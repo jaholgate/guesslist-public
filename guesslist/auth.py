@@ -10,6 +10,7 @@ from flask import (
     session,
     url_for,
 )
+
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from guesslist.db import get_db
@@ -24,7 +25,7 @@ def register():
         username = request.form["username"]
         password = request.form["password"]
         club_id = request.form["club_id"]
-        db = get_db()
+        # TODO add hashid decoding
         error = None
 
         if not email:
@@ -36,6 +37,7 @@ def register():
 
         if error is None:
             try:
+                db = get_db()
                 db.execute(
                     "INSERT INTO user (email, username, password) VALUES (?, ?, ?)",
                     (email, username, generate_password_hash(password)),

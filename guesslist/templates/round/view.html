@@ -49,12 +49,26 @@
 	{% if round['status'] == "open_for_guesses" %}
 	<h3>Listen to playlist:</h3>
 	<a href="{{ round['playlist_url']}}">Playlist link</a>
-	<h3>Guess who submitted each song</h3>
+
+	<h3>Submit your guesses</h3>
+	<form action="">
 	{% for song in songs %}
-	<img src="{{ song['image_url'] }}" alt="" width="100">
-	<p><a href="http://open.spotify.com/track/{{ song['spotify_track_id'] }}">{{ song["artist"] }} - {{ song["name"] }}</a></p>
+	<a href="http://open.spotify.com/track/{{ song['spotify_track_id'] }}">
+		<img src="{{ song['image_url'] }}" alt="" width="100">
+		<p>{{ song["artist"] }} - {{ song["name"] }}</p>
+	</a>
+	
+	<label for="">Who submitted this?</label>
+	<select name="" id="">
+		<option selected disabled>Select:</option>
+		{% for user in users %}
+		<option>{{ user['username'] }}</option>
+		{% endfor %}
+	</select>
 
 	{% endfor %}
+	</form>
+
 	{% endif %}
 
 

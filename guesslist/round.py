@@ -62,7 +62,7 @@ def add_round(name, description, club_id):
     db.commit()
 
 
-@bp.route("/<int:id>/")
+@bp.route("/<hashid:id>/")
 @login_required
 def view(id):
     # Defines the round view screen depending on round status
@@ -75,6 +75,11 @@ def view(id):
 
     # If users = songs (everyone has submitted)
     if get_round_status(round_id) == "open_for_guesses":
+        # Get users
+        users = db.execute(
+            "SELECT id, username FROM user WHERE club_id = ?", (g.user["club_id"],)
+        ).fetchall()
+
         # Get songs
         songs = db.execute(
             "SELECT artist, name, image_url, spotify_track_id, user_id, round_id, club_id"
@@ -86,16 +91,20 @@ def view(id):
 
         # If guesses = songs (everyone has guessed)
         # Get guesses
+
+        # Close round
+        # Open next round
         # Show results
+        # Update user scores
 
         # Else (not everyone has guessed)
-
         # Show songs
         # Show link to playlist
         return render_template(
             "round/view.html",
             round=round,
             songs=songs,
+            users=users,
             song_count=song_count,
             club_users_count=club_users_count,
         )
@@ -147,7 +156,7 @@ def refresh_access_token():
     return r["access_token"]
 
 
-@bp.route("/<int:id>/submit", methods=["POST"])
+@bp.route("/<hashid:id>/submit", methods=["POST"])
 @login_required
 def submit(id):
     round_id = id
@@ -269,7 +278,7 @@ def submit(id):
             return redirect("/round/" + str(round_id))
 
 
-@bp.route("/<int:id>/start")
+@bp.route("/<hashid:id>/start")
 @login_required
 def start(id):
     # For the admin to start the first round in a club
