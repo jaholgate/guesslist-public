@@ -62,7 +62,7 @@ def add_round(name, description, club_id):
     db.commit()
 
 
-@bp.route("/<hashid:id>/")
+@bp.route("/<int:id>/")
 @login_required
 def view(id):
     # Defines the round view screen depending on round status
@@ -82,7 +82,7 @@ def view(id):
 
         # Get songs
         songs = db.execute(
-            "SELECT artist, name, image_url, spotify_track_id, user_id, round_id, club_id"
+            "SELECT id, artist, name, image_url, spotify_track_id, user_id, round_id, club_id"
             " FROM song WHERE round_id = ? AND club_id = ? ",
             (id, g.user["club_id"]),
         ).fetchall()
@@ -156,7 +156,7 @@ def refresh_access_token():
     return r["access_token"]
 
 
-@bp.route("/<hashid:id>/submit", methods=["POST"])
+@bp.route("/<int:id>/submit", methods=["POST"])
 @login_required
 def submit(id):
     round_id = id
@@ -278,7 +278,31 @@ def submit(id):
             return redirect("/round/" + str(round_id))
 
 
-@bp.route("/<hashid:id>/start")
+@bp.route("/guess", methods=["POST"])
+@login_required
+def guess():
+    # For admin to add a round to club
+    if request.method == "POST":
+        name = request.form["name"]
+        description = request.form["description"]
+        error = None
+
+        if not name:
+            error = "Name is required."
+
+        elif not name:
+            error = "Description is required."
+
+        if error is not None:
+            flash(error)
+        else:
+            add_round(name, description, g.user["club_id"])
+            return redirect(url_for("index.index"))
+
+    return render_template("round/add.html")
+
+
+@bp.route("/<int:id>/start")
 @login_required
 def start(id):
     # For the admin to start the first round in a club

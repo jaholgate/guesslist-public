@@ -89,7 +89,7 @@ def create():
                 add_round(
                     starter_round["name"],
                     starter_round["description"],
-                    user_id,
+                    club[0],
                 )
 
             return redirect(url_for("index.index"))
@@ -158,7 +158,7 @@ def get_club(id, check_author=True):
     return club
 
 
-@bp.route("/<hashid:id>/update", methods=("GET", "POST"))
+@bp.route("/<int:id>/update", methods=("GET", "POST"))
 @login_required
 def update(id):
     club = get_club(id)
@@ -181,7 +181,7 @@ def update(id):
     return render_template("club/update.html", club=club)
 
 
-@bp.route("/<hashid:id>/delete", methods=("POST",))
+@bp.route("/<int:id>/delete", methods=("POST",))
 @login_required
 def delete(id):
     get_club(id)

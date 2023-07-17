@@ -59,7 +59,7 @@
 	</a>
 	
 	<label for="">Who submitted this?</label>
-	<select name="" id="">
+	<select name="{{ song['id'] }}" id="">
 		<option selected disabled>Select:</option>
 		{% for user in users %}
 		<option>{{ user['username'] }}</option>
