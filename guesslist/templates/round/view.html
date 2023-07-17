@@ -51,22 +51,32 @@
 	<a href="{{ round['playlist_url']}}">Playlist link</a>
 
 	<h3>Submit your guesses</h3>
-	<form action="">
+	<form action="{{ url_for('round.guess', id=round['id']) }}" method="post">
 	{% for song in songs %}
 	<a href="http://open.spotify.com/track/{{ song['spotify_track_id'] }}">
 		<img src="{{ song['image_url'] }}" alt="" width="100">
 		<p>{{ song["artist"] }} - {{ song["name"] }}</p>
 	</a>
+
+	<fieldset>
+		<label for="{{ song['id'] }}_userid">Who submitted this?</label>
+		<select name="{{ song['id'] }}_userid" id="">
+			<option selected disabled>Select:</option>
+			{% for user in users %}
+			<option>{{ user['username'] }}</option>
+			{% endfor %}
+		</select>
+		<label for="{{ song['id'] }}_comment">Comment</label>
+		<input type="text" name="{{ song['id'] }}_comment">
+		<input type="hidden" name="{{loop.index}}" value="">
+
+	</fieldset>
+
+	<!-- TODO Add JS to combine input values for each song/fieldset into hidden input value? Then parse it in python -->
 	
-	<label for="">Who submitted this?</label>
-	<select name="{{ song['id'] }}" id="">
-		<option selected disabled>Select:</option>
-		{% for user in users %}
-		<option>{{ user['username'] }}</option>
-		{% endfor %}
-	</select>
 
 	{% endfor %}
+	<input type="submit" value="Submit guesses" />
 	</form>
 
 	{% endif %}

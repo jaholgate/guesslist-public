@@ -278,28 +278,37 @@ def submit(id):
             return redirect("/round/" + str(round_id))
 
 
-@bp.route("/guess", methods=["POST"])
+@bp.route("/<int:id>/guess", methods=["POST"])
 @login_required
-def guess():
-    # For admin to add a round to club
+def guess(id):
+    round_id = id
     if request.method == "POST":
-        name = request.form["name"]
-        description = request.form["description"]
-        error = None
+        print(request.form)
+        data = request.form.to_dict(flat=False)
+        print(data)
+        song_ids = []
+        for field in data:
+            if field == "song_id":
+                song_ids.append(data[field])
 
-        if not name:
-            error = "Name is required."
+        print(song_ids)
+        for song_id in song_ids:
+            print(song_id)
+        # name = request.form["name"]
+        # description = request.form["description"]
+        # error = None
 
-        elif not name:
-            error = "Description is required."
+        # if not name:
+        #     error = "Name is required."
 
-        if error is not None:
-            flash(error)
-        else:
-            add_round(name, description, g.user["club_id"])
-            return redirect(url_for("index.index"))
+        # elif not name:
+        #     error = "Description is required."
 
-    return render_template("round/add.html")
+        # if error is not None:
+        #     flash(error)
+        # else:
+        #     add_round(name, description, g.user["club_id"])
+        return redirect("/round/" + str(round_id))
 
 
 @bp.route("/<int:id>/start")
