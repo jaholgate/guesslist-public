@@ -51,32 +51,31 @@
 	<a href="{{ round['playlist_url']}}">Playlist link</a>
 
 	<h3>Submit your guesses</h3>
-	<form action="{{ url_for('round.guess', id=round['id']) }}" method="post">
+	<form id="guess-form" action="{{ url_for('round.guess', id=round['id']) }}" method="post">
 	{% for song in songs %}
 	<a href="http://open.spotify.com/track/{{ song['spotify_track_id'] }}">
 		<img src="{{ song['image_url'] }}" alt="" width="100">
 		<p>{{ song["artist"] }} - {{ song["name"] }}</p>
 	</a>
 
-	<fieldset>
-		<label for="{{ song['id'] }}_userid">Who submitted this?</label>
-		<select name="{{ song['id'] }}_userid" id="">
+	<!-- TODO don't let user guess on own song -->
+	<fieldset class="guess-form__fieldset">
+		<input class="guess-form__input" type="hidden" name="song-id" value="{{ song['id'] }}">
+		<label for="user-id">Who submitted this?</label>
+		<select class="guess-form__input" name="user-id">
 			<option selected disabled>Select:</option>
 			{% for user in users %}
 			<option>{{ user['username'] }}</option>
 			{% endfor %}
 		</select>
-		<label for="{{ song['id'] }}_comment">Comment</label>
-		<input type="text" name="{{ song['id'] }}_comment">
-		<input type="hidden" name="{{loop.index}}" value="">
+		<label for="comment">Comment</label>
+		<input class="guess-form__input" type="text" name="comment">
+		<input class="guess-form__input--all-values" type="hidden" name="{{loop.index}}" value="">
 
-	</fieldset>
-
-	<!-- TODO Add JS to combine input values for each song/fieldset into hidden input value? Then parse it in python -->
-	
+	</fieldset>	
 
 	{% endfor %}
-	<input type="submit" value="Submit guesses" />
+	<button class="guess-form__button">Submit guesses</button>
 	</form>
 
 	{% endif %}
@@ -87,5 +86,7 @@
 
 		<!-- Show guesses, answers, comments, scores -->
 
+<script type="text/javascript" src="/static/guess.js"></script>
 
 {% endblock %}
+

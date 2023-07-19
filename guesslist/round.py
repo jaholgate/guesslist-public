@@ -282,18 +282,41 @@ def submit(id):
 @login_required
 def guess(id):
     round_id = id
+    club_id = g.user["club_id"]
     if request.method == "POST":
-        print(request.form)
-        data = request.form.to_dict(flat=False)
-        print(data)
-        song_ids = []
-        for field in data:
-            if field == "song_id":
-                song_ids.append(data[field])
+        data = request.form
+        db = get_db()
+        # Inputs are named '1', '2', '3' up to the number of songs guessed on
+        i = 1
+        while True:
+            # Check if there is an input named i
+            try:
+                values = data[str(i)]
+            except:
+                # If not, break the loop
+                break
+            else:
+                print(values)
+                # The value of the input is a string containing a comma-separated list of values
+                # Split that value into an array
+                values_array = values.split(",")
+                print(values_array)
+                song_id = values_array[0]
+                guess_username = values_array[1]
+                guess_user_id = db.execute(
+                    "SELECT id FROM user WHERE username = ?",
+                    (guess_username),
+                ).fetchone()["id"]
+                # TODO add comment column to table, then include comment in db.execute
+                # comment = values_array[2]
+                db.execute(
+                    "INSERT INTO guess (guess_user_id, user_id, song_id, round_id, club_id)"
+                    " VALUES (?, ?, ?, ?, ?)",
+                    (guess_user_id, g.user["id"], song_id, round_id, club_id),
+                )
+                db.commit()
+                i = i + 1
 
-        print(song_ids)
-        for song_id in song_ids:
-            print(song_id)
         # name = request.form["name"]
         # description = request.form["description"]
         # error = None

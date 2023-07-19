@@ -7,7 +7,7 @@ img {
 	display: inline-block;
 }
 
-input, select, label {
+input, select, label, fieldset {
 	display: block;
 	margin-bottom: 1em;
 }

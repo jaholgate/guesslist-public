@@ -54,9 +54,12 @@ CREATE TABLE IF NOT EXISTS guess (
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   guess_user_id NOT NULL,
   user_id NOT NULL,
+  song_id NOT NULL,
   round_id INTEGER NOT NULL,
   club_id INTEGER NOT NULL,
+  FOREIGN KEY (guess_user_id) REFERENCES user (id),
   FOREIGN KEY (user_id) REFERENCES user (id),
+  FOREIGN KEY (song_id) REFERENCES song (id),
   FOREIGN KEY (round_id) REFERENCES round (id),
   FOREIGN KEY (club_id) REFERENCES club (id)
 );
