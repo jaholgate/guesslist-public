@@ -307,12 +307,11 @@ def guess(id):
                     "SELECT id FROM user WHERE username = ?",
                     (guess_username),
                 ).fetchone()["id"]
-                # TODO add comment column to table, then include comment in db.execute
-                # comment = values_array[2]
+                comment = values_array[2]
                 db.execute(
-                    "INSERT INTO guess (guess_user_id, user_id, song_id, round_id, club_id)"
-                    " VALUES (?, ?, ?, ?, ?)",
-                    (guess_user_id, g.user["id"], song_id, round_id, club_id),
+                    "INSERT INTO guess (guess_user_id, comment, user_id, song_id, round_id, club_id)"
+                    " VALUES (?, ?, ?, ?, ?, ?)",
+                    (guess_user_id, comment, g.user["id"], song_id, round_id, club_id),
                 )
                 db.commit()
                 i = i + 1
