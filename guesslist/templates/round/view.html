@@ -1,92 +1,86 @@
-{% extends 'base.html' %} 
+{% extends 'base.html' %}
 {% block content %}
-	<h1>{{ round['name'] }}</h1>
-	<p>{{ round['description'] }}</p>
-
-	{% if round['status'] == "pending" %}
-	<p>This round is not open yet.</p>
-	{% endif %}
-
-	{% if round['status'] == "open_for_songs" %}
-		<p>{{ song_count }}/{{ club_users_count }} members have submitted</p>
-		<!-- If user has submitted -->
-		<!-- Show submitted song -->
-		{% if user_song %}
-			<h3>You submitted:</h3>
-			<img src="{{ user_song['image_url'] }}" alt="" width="100">
-			<p><a href="http://open.spotify.com/track/{{ user_song['spotify_track_id'] }}">{{ user_song["artist"] }} - {{ user_song["name"] }}</a></p>
-		{% endif %}
-
-		<!-- If user has not submitted -->
-		<!-- Show song submit form -->
-		{% if not user_song %}
-		<h3>Submit your song</h3>
-		<form action="{{ url_for('round.submit', id=round['id']) }}"  method="post">
-			<label for="spotify_track_url">Spotify track URL</label>
-			<input name="spotify_track_url" id="spotify_track_url" value="{{ request.form['spotify_track_url'] }}" required />
-			<p>E.g.</p>
-			<p>https://open.spotify.com/track/7igDDKaYTMkV5xbse143IW</p>
-			<p>https://open.spotify.com/track/4QQEzkxcONBthDLfzqIh9S?si=29b08f1ed89646f5</p>
-			<input type="submit" value="Submit" />
-		</form>
-		{% endif %}
-		
-	{% endif %} <!-- round['status'] == "open_for_songs" -->
-
-<!-- If current round and not all submissions received -->
-
-
-
-	<!-- Show no of songs submitted / no of club members -->
-
-
-	
-<!-- If current round and all songs submitted -->
-
-
-	<!-- Show songs and guess form -->
-
-	{% if round['status'] == "open_for_guesses" %}
-	<h3>Listen to playlist:</h3>
-	<a href="{{ round['playlist_url']}}">Playlist link</a>
-
-	<h3>Submit your guesses</h3>
-	<form id="guess-form" action="{{ url_for('round.guess', id=round['id']) }}" method="post">
-	{% for song in songs %}
-	<a href="http://open.spotify.com/track/{{ song['spotify_track_id'] }}">
-		<img src="{{ song['image_url'] }}" alt="" width="100">
-		<p>{{ song["artist"] }} - {{ song["name"] }}</p>
-	</a>
-
-	<!-- TODO don't let user guess on own song -->
-	<fieldset class="guess-form__fieldset">
-		<input class="guess-form__input" type="hidden" name="song-id" value="{{ song['id'] }}">
-		<label for="user-id">Who submitted this?</label>
-		<select class="guess-form__input" name="user-id">
-			<option selected disabled>Select:</option>
-			{% for user in users %}
-			<option>{{ user['username'] }}</option>
-			{% endfor %}
-		</select>
-		<label for="comment">Comment</label>
-		<input class="guess-form__input" type="text" name="comment">
-		<input class="guess-form__input--all-values" type="hidden" name="{{loop.index}}" value="">
-
-	</fieldset>	
-
-	{% endfor %}
-	<button class="guess-form__button">Submit guesses</button>
-	</form>
-
-	{% endif %}
-
-
-	
-	<!-- If all guesses submitted -->
-
-		<!-- Show guesses, answers, comments, scores -->
-
-<script type="text/javascript" src="/static/guess.js"></script>
-
+    <h1>{{ round['name'] }}</h1>
+    <p>{{ round['description'] }}</p>
+    {% if round['status'] == "pending" %}<p>This round is not open yet.</p>{% endif %}
+    {% if round['status'] == "open_for_songs" %}
+        <p>{{ song_count }}/{{ club_users_count }} members have submitted</p>
+    {% endif %}
+    <!-- If current round and all songs submitted -->
+    {% if round['status'] == "open_for_guesses" or round['status'] == "complete" %}
+        <h3>Listen to playlist:</h3>
+        <a href="{{ round['playlist_url'] }}">Playlist link</a>
+    {% endif %}
+    {% if (round['status'] == "open_for_songs" and user_song) or  round['status'] == "open_for_guesses" %}
+        <!-- If user has submitted -->
+        <!-- Show submitted song -->
+        <h3>You submitted:</h3>
+        <img src="{{ user_song['image_url'] }}" alt="" width="100" />
+        <p>
+            <a href="http://open.spotify.com/track/{{ user_song['spotify_track_id'] }}">{{ user_song["artist"] }} - {{ user_song["name"] }}</a>
+        </p>
+    {% endif %}
+    <!-- If user has not submitted -->
+    <!-- Show song submit form -->
+    {% if round['status'] == "open_for_songs" and not user_song %}
+        <h3>Submit your song</h3>
+        <form action="{{ url_for('round.submit', id=round['id']) }}" method="post">
+            <label for="spotify_track_url">Spotify track URL</label>
+            <input name="spotify_track_url"
+                   id="spotify_track_url"
+                   value="{{ request.form['spotify_track_url'] }}"
+                   required />
+            <p>E.g.</p>
+            <p>https://open.spotify.com/track/7igDDKaYTMkV5xbse143IW</p>
+            <p>https://open.spotify.com/track/4QQEzkxcONBthDLfzqIh9S?si=29b08f1ed89646f5</p>
+            <input type="submit" value="Submit" />
+        </form>
+    {% endif %}
+    <!-- round['status'] == "open_for_songs" -->
+    <!-- If current round and all songs submitted -->
+    {% if round['status'] == "open_for_guesses" %}
+        <!-- Show songs and guess form -->
+        <h3>Submit your guesses</h3>
+        <form id="guess-form"
+              action="{{ url_for('round.guess', id=round['id']) }}"
+              method="post">
+            {% for song in songs_except_own %}
+                <a href="http://open.spotify.com/track/{{ song['spotify_track_id'] }}">
+                    <img src="{{ song['image_url'] }}" alt="" width="100" />
+                    <p>{{ song["artist"] }} - {{ song["name"] }}</p>
+                </a>
+                <!-- If the user submitted the song, confirm this to them -->
+                {% if song['user_id'] == g.user['id'] %}
+                    <p>You submitted this!</p>
+                {% else %}
+                    <!-- Otherwise, show the guess form -->
+                    <fieldset class="guess-form__fieldset">
+                        <input class="guess-form__input"
+                               type="hidden"
+                               name="song-id"
+                               value="{{ song['id'] }}" />
+                        <label for="user-id">Who submitted this?</label>
+                        <select class="guess-form__input" name="user-id">
+                            <option selected disabled>Select:</option>
+                            <!-- Add an option for each user except the current user, so they can't guess themself -->
+                            {% for user in users %}
+                                {% if user['id'] != g.user['id'] %}<option>{{ user['username'] }}</option>{% endif %}
+                            {% endfor %}
+                        </select>
+                        <label for="comment">Comment</label>
+                        <input class="guess-form__input" type="text" name="comment" />
+                        <input class="guess-form__input--all-values"
+                               type="hidden"
+                               name="{{ loop.index }}"
+                               value="" />
+                    </fieldset>
+                {% endif %}
+            {% endfor %}
+            <button class="guess-form__button">Submit guesses</button>
+        </form>
+    {% endif %}
+    <!-- If all guesses submitted -->
+    {% if round['status'] == "complete" %}<p>Round complete!</p>{% endif %}
+    <!-- Show guesses, answers, comments, scores -->
+    <script type="text/javascript" src="/static/guess.js"></script>
 {% endblock %}
-
