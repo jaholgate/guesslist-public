@@ -66,10 +66,19 @@ def add_round(name, description, club_id):
 @login_required
 def view(id):
     # Defines the round view screen depending on round status
-    round_id = id
-    round = get_round(round_id)
+
     db = get_db()
 
+    # Variables for render_template
+    round_id = id
+    round = get_round(round_id)
+    songs = {}
+    user_song = {}
+    songs_except_own = {}
+    users = {}
+    guesses = {}
+    user_guess = {}
+    round_points = {}
     club_users_count = get_club_users_count(round_id)
     song_count = get_song_count(round_id)
     guess_count = get_guess_count(round_id)
@@ -78,7 +87,7 @@ def view(id):
     user_song = db.execute(
         "SELECT artist, name, image_url, spotify_track_id, user_id, round_id, club_id"
         " FROM song WHERE user_id = ? AND round_id = ? AND club_id = ?",
-        (g.user["id"], id, g.user["club_id"]),
+        (g.user["id"], round_id, g.user["club_id"]),
     ).fetchone()
 
     # If users = songs (everyone has submitted)
@@ -88,69 +97,68 @@ def view(id):
             "SELECT id, username FROM user WHERE club_id = ?", (g.user["club_id"],)
         ).fetchall()
 
-        # Get all songs
-        songs = db.execute(
-            "SELECT id, artist, name, image_url, spotify_track_id, user_id, round_id, club_id"
-            " FROM song WHERE round_id = ? AND club_id = ? ",
-            (id, g.user["club_id"]),
-        ).fetchall()
-
         # Get songs submitted by other users
         songs_except_own = db.execute(
             "SELECT id, artist, name, image_url, spotify_track_id, user_id, round_id, club_id"
             " FROM song WHERE round_id = ? AND club_id = ? AND user_id != ? ",
-            (id, g.user["club_id"], g.user["id"]),
+            (round_id, g.user["club_id"], g.user["id"]),
         ).fetchall()
 
-        # If all users have guessed
-        if get_round_status(round_id) == "complete":
-            # Get guesses
-            guesses = db.execute(
-                "SELECT id, guess_user_id, comment, user_id, song_id, round_id, club_id"
-                " FROM song WHERE round_id = ? AND club_id = ? ",
-                (id, g.user["club_id"]),
-            ).fetchall()
+        # Check if user has guessed
+        user_guess = db.execute(
+            "SELECT user_id"
+            " FROM guess WHERE user_id = ? AND round_id = ? AND club_id = ?",
+            (g.user["id"], round_id, g.user["club_id"]),
+        ).fetchone()
 
-            # Show results
-            # Update user scores
+    # If all users have guessed
+    if get_round_status(round_id) == "complete":
+        # Get all songs
+        songs = db.execute(
+            "SELECT song.id, artist, name, image_url, spotify_track_id, user_id, round_id, song.club_id, username"
+            " FROM song "
+            " JOIN user ON song.user_id = user.id"
+            " WHERE song.round_id = ? AND song.club_id = ?",
+            (round_id, g.user["club_id"]),
+        ).fetchall()
 
-        # Else (not everyone has guessed)
-        # Show songs
-        # Show link to playlist
-        return render_template(
-            "round/view.html",
-            round=round,
-            songs=songs,
-            user_song=user_song,
-            songs_except_own=songs_except_own,
-            users=users,
-            guesses=guesses,
-            song_count=song_count,
-            club_users_count=club_users_count,
-        )
+        # Get guesses
+        guesses = db.execute(
+            "SELECT guess.id, guess_user_id, guess_username, comment, user_id, song_id, round_id, guess.club_id, username"
+            " FROM guess "
+            " JOIN user ON user_id = user.id"
+            " WHERE round_id = ? AND guess.club_id = ? ",
+            (round_id, g.user["club_id"]),
+        ).fetchall()
 
-    # Else (not everyone has submitted)
+        # for guess in guesses {
+        #     if guess['user_id'] not in round_points:
+        #        round_points['user_id'] =
+        # }
 
-    # If user has submitted
-    # Show the song info
-    if user_song:
-        return render_template(
-            "round/view.html",
-            round=round,
-            user_song=user_song,
-            song_count=song_count,
-            club_users_count=club_users_count,
-        )
+        round_points = db.execute(
+            "SELECT username, SUM(points) as points"
+            " FROM guess "
+            " JOIN user ON user_id = user.id"
+            " WHERE round_id = ? AND guess.club_id = ? "
+            " GROUP BY username "
+            " ORDER BY points DESC",
+            (round_id, g.user["club_id"]),
+        ).fetchall()
 
-    # Else
-    # Show the song submit form
-    else:
-        return render_template(
-            "round/view.html",
-            round=round,
-            song_count=song_count,
-            club_users_count=club_users_count,
-        )
+    return render_template(
+        "round/view.html",
+        round=round,
+        songs=songs,
+        user_song=user_song,
+        songs_except_own=songs_except_own,
+        users=users,
+        user_guess=user_guess,
+        guesses=guesses,
+        round_points=round_points,
+        song_count=song_count,
+        club_users_count=club_users_count,
+    )
 
 
 def refresh_access_token():
@@ -176,6 +184,8 @@ def submit(id):
         # TODO Add error handling
         spotify_track_url = request.form["spotify_track_url"]
         error = None
+
+        # TODO if spotify_track_url or user_id already in songs table (for round), reject
 
         if not spotify_track_url:
             error = "Spotify track URL is required."
@@ -295,6 +305,9 @@ def submit(id):
 def guess(id):
     round_id = id
     club_id = g.user["club_id"]
+
+    # TODO if user_id already in guess table for this round, reject
+
     if request.method == "POST":
         data = request.form
         db = get_db()
@@ -320,10 +333,26 @@ def guess(id):
                     (guess_username),
                 ).fetchone()["id"]
                 comment = values_array[2]
+                song_submitter_id = db.execute(
+                    "SELECT user_id FROM song WHERE id = ?",
+                    (song_id),
+                ).fetchone()["user_id"]
+                points = 0
+                if guess_user_id == song_submitter_id:
+                    points = 1
                 db.execute(
-                    "INSERT INTO guess (guess_user_id, comment, user_id, song_id, round_id, club_id)"
-                    " VALUES (?, ?, ?, ?, ?, ?)",
-                    (guess_user_id, comment, g.user["id"], song_id, round_id, club_id),
+                    "INSERT INTO guess (guess_user_id, guess_username, comment, points, user_id, song_id, round_id, club_id)"
+                    " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        guess_user_id,
+                        guess_username,
+                        comment,
+                        points,
+                        g.user["id"],
+                        song_id,
+                        round_id,
+                        club_id,
+                    ),
                 )
                 db.commit()
                 i = i + 1
@@ -332,13 +361,30 @@ def guess(id):
         # (Each user can guess on every other user's song, except their own).
         club_users_count = get_club_users_count(round_id)
         guess_count = get_guess_count(round_id)
-        if guess_count == (club_users_count * club_users_count - 1):
+        if guess_count == (club_users_count * (club_users_count - 1)):
             # Update round status
             db.execute(
                 "UPDATE round SET status = ?" " WHERE id = ?",
                 ("complete", round_id),
             )
             db.commit()
+
+            # TODO update scores
+            # Get users
+            users = db.execute(
+                "SELECT id FROM user WHERE club_id = ?", (g.user["club_id"],)
+            ).fetchall()
+
+            for user in users:
+                round_points = db.execute(
+                    "SELECT SUM(points) FROM guess WHERE user_id = ? AND round_id = ?",
+                    (user["id"], round_id),
+                ).fetchone()["SUM(points)"]
+                db.execute(
+                    "UPDATE user SET score = score + ?" " WHERE id = ?",
+                    (round_points, user["id"]),
+                )
+                db.commit()
 
             # Open next round
             # Get ID of next round with status 'pending'
