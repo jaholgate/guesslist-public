@@ -137,6 +137,22 @@ def join():
     return render_template("club/join.html")
 
 
+@bp.route("/<int:id>/leaderboard")
+@login_required
+def leaderboard(id):
+    club_id = id
+    users = (
+        get_db()
+        .execute(
+            "SELECT username, score FROM user WHERE club_id = ? ORDER BY score DESC",
+            (club_id,),
+        )
+        .fetchall()
+    )
+
+    return render_template("club/leaderboard.html", users=users)
+
+
 def get_club(id, check_author=True):
     club = (
         get_db()

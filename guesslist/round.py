@@ -321,11 +321,9 @@ def guess(id):
                 # If not, break the loop
                 break
             else:
-                print(values)
                 # The value of the input is a string containing a comma-separated list of values
                 # Split that value into an array
                 values_array = values.split(",")
-                print(values_array)
                 song_id = values_array[0]
                 guess_username = values_array[1]
                 guess_user_id = db.execute(
@@ -375,14 +373,18 @@ def guess(id):
                 "SELECT id FROM user WHERE club_id = ?", (g.user["club_id"],)
             ).fetchall()
 
+            # For each user
             for user in users:
+                user_id = user["id"]
+                # Get the number of points scored in this round
                 round_points = db.execute(
                     "SELECT SUM(points) FROM guess WHERE user_id = ? AND round_id = ?",
-                    (user["id"], round_id),
+                    (user_id, round_id),
                 ).fetchone()["SUM(points)"]
+                # Add points to their overall score
                 db.execute(
-                    "UPDATE user SET score = score + ?" " WHERE id = ?",
-                    (round_points, user["id"]),
+                    "UPDATE user SET score = score + ? WHERE id = ?",
+                    (round_points, user_id),
                 )
                 db.commit()
 
@@ -392,6 +394,7 @@ def guess(id):
                 "SELECT id FROM round WHERE status = ? AND club_id = ?",
                 ("pending", club_id),
             ).fetchone()["id"]
+            # Update round status
             db.execute(
                 "UPDATE round SET status = ?" " WHERE id = ?",
                 ("open_for_songs", next_round_id),

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block header %}
+    <h1>
+        {% block title %}
+            Leaderboard
+        {% endblock title %}
+    </h1>
+{% endblock header %}
+{% block content %}
+    <table>
+        <tr>
+            <th>Player</th>
+            <th>Score</th>
+        </tr>
+        {% for user in users %}
+            <tr>
+                <td>{{ user['username'] }}</td>
+                <td>{{ user['score'] }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock content %}

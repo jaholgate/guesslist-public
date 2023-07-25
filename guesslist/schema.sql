@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS user (
   username TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL,
   club_id INTEGER,
-  score INTEGER,
+  score INTEGER NOT NULL DEFAULT 0,
   FOREIGN KEY (club_id) REFERENCES club (id)
 );
 
