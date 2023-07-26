@@ -7,21 +7,6 @@ from guesslist.round import add_round
 
 bp = Blueprint("club", __name__, url_prefix="/club")
 
-# @bp.route("/")
-# def index():
-#     db = get_db()
-#     clubs = db.execute(
-#         "SELECT club.id, name, created, admin_id, username"
-#         " FROM club JOIN user ON club.admin_id = user.id"
-#         " ORDER BY created DESC"
-#     ).fetchall()
-#     rounds = db.execute(
-#         "SELECT round.id, number, round.name, description, round.created, admin_id"
-#         " FROM round JOIN club ON round.club_id = club.id"
-#         " ORDER BY number ASC"
-#     ).fetchall()
-#     return render_template("club/index.html", clubs=clubs, rounds=rounds)
-
 
 @bp.route("/create", methods=("GET", "POST"))
 @login_required
@@ -84,7 +69,6 @@ def create():
                 {"name": "Hello, Numan", "description": "Best of Gary"},
             ]
 
-            # TODO fix round numbering - currently '1' for each round created
             for starter_round in starter_rounds:
                 add_round(
                     starter_round["name"],
@@ -157,7 +141,7 @@ def get_club(id, check_author=True):
     club = (
         get_db()
         .execute(
-            "SELECT club.id, name, created, admin_id, username"
+            "SELECT club.id, name, club.created, admin_id, username"
             " FROM club JOIN user ON club.admin_id = user.id"
             " WHERE club.id = ?",
             (id,),

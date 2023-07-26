@@ -10,10 +10,10 @@
         </ol>
         <ul>
             <li>
-                <a href="{{ url_for("auth.register") }}">Register</a>
+                <a href='{{ url_for("auth.register") }}'>Register</a>
             </li>
             <li>
-                <a href="{{ url_for("auth.login") }}">Log In</a>
+                <a href='{{ url_for("auth.login") }}'>Log In</a>
             </li>
         </ul>
     {% endif %}
@@ -21,10 +21,10 @@
     {% if g.user and not g.user['club_id'] %}
         <ul>
             <li>
-                <a href="{{ url_for("club.create") }}">Create a club</a>
+                <a href='{{ url_for("club.create") }}'>Create a club</a>
             </li>
             <li>
-                <a href="{{ url_for("club.join") }}">Join a club</a>
+                <a href='{{ url_for("club.join") }}'>Join a club</a>
             </li>
         </ul>
     {% endif %}
@@ -51,25 +51,22 @@
         {% endif %}
         {% if rounds %}
             <h2>Rounds</h2>
-            {% for round in rounds %}
-                <article class="club">
-                    <header>
-                        <div>
-                            <h3>
-                                {{ round['number'] }} <a href="{{ url_for('round.view', id=round['id']) }}">{{ round['name'] }}
-                            </h3>
+            <ol>
+                {% for round in rounds %}
+                    <li class="club">
+                        <a href="{{ url_for('round.view', id=round['id']) }}">
+                            <h3>{{ round['name'] }}</h3>
                         </a>
                         <ul>
                             <li>Description: {{ round['description'] }}</li>
                             <li>Status: {{ round['status'] }}</li>
                         </ul>
-                    </div>
-                    <!-- {% if g.user['id'] == club['admin_id'] %}
+                        <!-- {% if g.user['id'] == club['admin_id'] %}
 						<a class="action" href="{{ url_for('club.update', id=club['id']) }}">Manage</a>
                     {% endif %} -->
-                </header>
-            </article>
-        {% endfor %}
+                    </li>
+                {% endfor %}
+            </ol>
+        {% endif %}
     {% endif %}
-{% endif %}
 {% endblock content %}
