@@ -310,14 +310,26 @@ def submit(id):
 @bp.route("/<int:id>/guess", methods=["POST"])
 @login_required
 def guess(id):
-    round_id = id
-    club_id = g.user["club_id"]
-
-    # TODO if user_id already in guess table for this round, reject
-
     if request.method == "POST":
+        round_id = id
+        club_id = g.user["club_id"]
         data = request.form
         db = get_db()
+        error = None
+
+        # If user already guessed, reject
+        user_already_guessed = db.execute(
+            "SELECT id FROM guess WHERE user_id = ? AND round_id = ?",
+            (g.user["id"], round_id),
+        ).fetchone()
+
+        if user_already_guessed:
+            error = "You have already submitted your guesses."
+
+        if error is not None:
+            flash(error)
+            return redirect(url_for("round.view", id=round_id))
+
         # Inputs are named '1', '2', '3' up to the number of songs guessed on
         i = 1
         while True:
@@ -374,7 +386,8 @@ def guess(id):
             )
             db.commit()
 
-            # TODO update scores
+            # Update scores
+
             # Get users
             users = db.execute(
                 "SELECT id FROM user WHERE club_id = ?", (g.user["club_id"],)
