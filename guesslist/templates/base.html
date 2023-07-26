@@ -1,43 +1,46 @@
 <!DOCTYPE html>
-{% if request.path == '/' %}
-    <title>guesslist: a music guessing game</title>
-{% else %}
-    <title>
-        {% block title %}
-        {% endblock title %}
-        - guesslist
-    </title>
-{% endif %}
-<link rel="stylesheet"
-      href="{{ url_for('static', filename='dist/output.css') }}" />
-<nav>
-    <h1 class="text-3xl font-bold underline">
-        <a href="{{ url_for("index.index") }}">guesslist</a>
-    </h1>
-    <ul>
-        {% if g.user %}
-            <li>
-                <span>{{ g.user['username'] }}</span>
-            </li>
-            <li>
-                <a href="{{ url_for("auth.logout") }}">Log Out</a>
-            {% else %}
-            </li>
-            <li>
-                <a href="{{ url_for("auth.register") }}">Register</a>
-            </li>
-            <li>
-                <a href="{{ url_for("auth.login") }}">Log In</a>
-            {% endif %}
-        </li>
-    </ul>
-</nav>
-<section class="content">
-    <header>
-        {% block header %}
-        {% endblock header %}
+<head>
+    {% if request.path == '/' %}
+        <title>guesslist: a music guessing game</title>
+    {% else %}
+        <title>
+            {% block title %}
+            {% endblock title %}
+            - guesslist
+        </title>
+    {% endif %}
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='dist/output.css') }}" />
+</head>
+<body class="bg-slate-800 text-slate-50">
+    <header class="bg-slate-950 p-2 mb-4">
+        <nav class="max-w-md mx-auto flex justify-between">
+            <h1 class="text-xl font-bold">
+                <a href="{{ url_for("index.index") }}">guesslist</a>
+            </h1>
+            <ul class="flex space-x-4">
+                {% if g.user %}
+                    <li>
+                        <a href='{{ url_for("auth.logout") }}'>Log Out</a>
+                    {% else %}
+                    </li>
+                    <li>
+                        <a href='{{ url_for("auth.register") }}'>Register</a>
+                    </li>
+                    <li>
+                        <a href='{{ url_for("auth.login") }}'>Log In</a>
+                    {% endif %}
+                </li>
+            </ul>
+        </nav>
     </header>
-    {% for message in get_flashed_messages() %}<div class="flash">{{ message }}</div>{% endfor %}
-    {% block content %}
-    {% endblock content %}
-</section>
+    <main class="max-w-md mx-auto bg-slate-800">
+        <header>
+            {% block header %}
+            {% endblock header %}
+        </header>
+        {% for message in get_flashed_messages() %}<div class="flash">{{ message }}</div>{% endfor %}
+        {% block content %}
+        {% endblock content %}
+    </main>
+</body>
