@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% block header %}
     <h1>
         {% block title %}
@@ -22,9 +22,9 @@
         <!-- If user has submitted -->
         <!-- Show submitted song -->
         <h3>You submitted:</h3>
-        <img src="{{ user_song['image_url'] }}" alt="" width="100" />
+        <img src="{{ user_song['image_url'] }}" alt="" width="100" height="100" />
         <p>
-            <a href="http://open.spotify.com/track/{{ user_song['spotify_track_id'] }}">{{ user_song["artist"] }} - {{ user_song["name"] }}</a>
+            <a href="https://open.spotify.com/track/{{ user_song['spotify_track_id'] }}">{{ user_song["artist"] }} - {{ user_song["name"] }}</a>
         </p>
     {% endif %}
     <!-- If user has not submitted -->
@@ -55,8 +55,8 @@
                   action="{{ url_for('round.guess', id=round['id']) }}"
                   method="post">
                 {% for song in songs_except_own %}
-                    <a href="http://open.spotify.com/track/{{ song['spotify_track_id'] }}">
-                        <img src="{{ song['image_url'] }}" alt="" width="100" />
+                    <a href="https://open.spotify.com/track/{{ song['spotify_track_id'] }}">
+                        <img src="{{ song['image_url'] }}" alt="" width="100" height="100" />
                         <p>{{ song["artist"] }} - {{ song["name"] }}</p>
                     </a>
                     <!-- If the user submitted the song, confirm this to them -->
@@ -97,8 +97,8 @@
         <p>Round complete!</p>
         <!-- Show guesses, answers, comments, scores -->
         {% for song in songs %}
-            <a href="http://open.spotify.com/track/{{ song['spotify_track_id'] }}">
-                <img src="{{ song['image_url'] }}" alt="" width="100" />
+            <a href="https://open.spotify.com/track/{{ song['spotify_track_id'] }}">
+                <img src="{{ song['image_url'] }}" alt="" width="100" height="100" />
                 <p>{{ song["artist"] }} - {{ song["name"] }}</p>
             </a>
             <p>Submitted by: {{ song ["username"] }}</p>
