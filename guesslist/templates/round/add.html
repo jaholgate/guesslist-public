@@ -1,11 +1,20 @@
-{% extends 'base.html' %} {% block header %}
-<h1>{% block title %}Add round{% endblock %}</h1>
-{% endblock %} {% block content %}
-<form method="post">
-	<label for="name">Name</label>
-	<input name="name" id="name" value="{{ request.form['name'] }}" required />
-	<label for="description">Description</label>
-	<input name="description" id="description" value="{{ request.form['description'] }}" required />
-	<input type="submit" value="Add" />
-</form>
-{% endblock %}
+{% extends 'base.html' %}
+{% block header %}
+    <h1>
+        {% block title %}
+            Add round
+        {% endblock title %}
+    </h1>
+{% endblock header %}
+{% block content %}
+    <form method="post">
+        <label for="name">Name</label>
+        <input name="name" id="name" value="{{ request.form['name'] }}" required />
+        <label for="description">Description</label>
+        <input name="description"
+               id="description"
+               value="{{ request.form['description'] }}"
+               required />
+        <input type="submit" value="Add" />
+    </form>
+{% endblock content %}

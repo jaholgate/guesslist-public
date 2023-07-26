@@ -1,15 +1,27 @@
-{% extends 'base.html' %} {% block header %}
-<h1>{% block title %}Edit round: "{{ round['name'] }}"{% endblock %}</h1>
-{% endblock %} {% block content %}
-<form method="post">
-	<label for="name">Name</label>
-	<input name="name" id="name" value="{{ request.form['name'] }}" required />
-	<label for="description">Description</label>
-	<input name="description" id="description" value="{{ request.form['description'] }}" required />
-	<input type="submit" value="Save" />
-</form>
-<hr />
-<form action="{{ url_for('round.delete', id=round['id']) }}" method="post">
-	<input class="danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');" />
-</form>
-{% endblock %}
+{% extends 'base.html' %}
+{% block header %}
+    <h1>
+        {% block title %}
+            Edit round: "{{ round['name'] }}"
+        {% endblock title %}
+    </h1>
+{% endblock header %}
+{% block content %}
+    <form method="post">
+        <label for="name">Name</label>
+        <input name="name" id="name" value="{{ request.form['name'] }}" required />
+        <label for="description">Description</label>
+        <input name="description"
+               id="description"
+               value="{{ request.form['description'] }}"
+               required />
+        <input type="submit" value="Save" />
+    </form>
+    <hr />
+    <form action="{{ url_for('round.delete', id=round['id']) }}" method="post">
+        <input class="danger"
+               type="submit"
+               value="Delete"
+               onclick="return confirm('Are you sure?');" />
+    </form>
+{% endblock content %}
