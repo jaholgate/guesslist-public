@@ -170,36 +170,52 @@ def refresh_access_token():
 @bp.route("/<int:id>/submit", methods=["POST"])
 @login_required
 def submit(id):
-    round_id = id
     if request.method == "POST":
-        # TODO Add error handling
+        round_id = id
         spotify_track_url = request.form["spotify_track_url"]
+        db = get_db()
         error = None
-
-        # TODO if spotify_track_url or user_id already in songs table (for round), reject
 
         if not spotify_track_url:
             error = "Spotify track URL is required."
 
+        # Remove the start of the URL and any query params to get the track id
+        spotify_track_id = spotify_track_url.replace(
+            "https://open.spotify.com/track/", ""
+        ).split("?")[0]
+
+        # If song already submitted, or user has already submitted, return an error
+        song_already_in_round = db.execute(
+            "SELECT id FROM song WHERE spotify_track_id = ? AND round_id = ?",
+            (spotify_track_id, round_id),
+        ).fetchone()
+
+        if song_already_in_round:
+            error = "This song has already been submitted in this round."
+
+        user_already_in_round = db.execute(
+            "SELECT id FROM song WHERE user_id = ? AND round_id = ?",
+            (g.user["id"], round_id),
+        ).fetchone()
+
+        if user_already_in_round:
+            error = "You have already submitted a song in this round."
+
         if error is not None:
             flash(error)
+            return redirect(url_for("round.view", id=round_id))
+
         else:
             # Get new access token for Spotify
             access_token = refresh_access_token()
 
             headers = {"Authorization": "Bearer {token}".format(token=access_token)}
 
-            # Remove the start of the URL to get the track id
-            spotify_track_id = spotify_track_url.replace(
-                "https://open.spotify.com/track/", ""
-            )
-
             # GET track info from Spotify. Format response as JSON
             r = requests.get(
                 BASE_URL + "tracks/" + spotify_track_id, headers=headers
             ).json()
 
-            db = get_db()
             # Add song to database
             db.execute(
                 "INSERT INTO song (artist, name, image_url, spotify_track_id, user_id, round_id, club_id)"
