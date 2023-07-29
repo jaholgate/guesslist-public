@@ -30,40 +30,34 @@
     {% endif %}
     <!-- If logged in and in a club -->
     {% if g.user and g.user['club_id'] %}
-        <h2>Your club: {{ club.name }}</h2>
-        <a href="{{ url_for('club.leaderboard', id=club['id']) }}">Leaderboard</a>
+        <p class="font-light">Your club:</p>
+        <h2 class="text-2xl font-bold mb-4">{{ club.name }}</h2>
         <!-- If club admin -->
-        {% if g.user['id'] == club['admin_id'] %}
-            <ul>
-                <li>
-                    <a class="action" href="{{ url_for('club.update', id=club['id']) }}">Manage club</a>
+        <ul class="flex space-x-4 mb-6">
+            <li class="grow">
+                <a class="btn-primary"
+                   href="{{ url_for('club.leaderboard', id=club['id']) }}">Leaderboard</a>
+            </li>
+            {% if g.user['id'] == club['admin_id'] %}
+                <li class="grow">
+                    <a class="btn-primary"
+                       href="{{ url_for('club.manage', id=club['id']) }}">Manage club</a>
                 </li>
-                <li>
-                    <a class="action" href="{{ url_for("round.add") }}">Add round</a>
-                </li>
-                {% if rounds and rounds[0]['status'] == 'pending' %}
-                    <li>
-                        <a class="action"
-                           href="{{ url_for('round.start', id=rounds[0]['id']) }}">Open club / start first round</a>
-                    </li>
-                {% endif %}
-            </ul>
-        {% endif %}
+            {% endif %}
+        </ul>
         {% if rounds %}
-            <h2>Rounds</h2>
+            <h3 class="text-xl font-bold mb-2">Rounds</h3>
             <ol>
                 {% for round in rounds %}
-                    <li class="club">
-                        <a href="{{ url_for('round.view', id=round['id']) }}">
-                            <h3>{{ round['name'] }}</h3>
-                        </a>
-                        <ul>
-                            <li>Description: {{ round['description'] }}</li>
-                            <li>Status: {{ round['status'] }}</li>
-                        </ul>
-                        <!-- {% if g.user['id'] == club['admin_id'] %}
-						<a class="action" href="{{ url_for('club.update', id=club['id']) }}">Manage</a>
+                    <li class="bg-slate-700 hover:bg-slate-600 mb-4 rounded-lg">
+                        <a class="block p-4" href="{{ url_for('round.view', id=round['id']) }}">
+                            <h4 class="text-xl">{{ round['name'] }}</h4>
+                            <p>{{ round['description'] }}</p>
+                            <p class="text-right">{{ round['status'] }}</p>
+                            <!-- {% if g.user['id'] == club['admin_id'] %}
+						<a class="action" href="{{ url_for('club.manage', id=club['id']) }}">Manage</a>
                     {% endif %} -->
+                        </a>
                     </li>
                 {% endfor %}
             </ol>

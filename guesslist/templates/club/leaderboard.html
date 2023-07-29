@@ -1,21 +1,23 @@
 {% extends "base.html" %}
 {% block header %}
-    <h1>
+    <a href='{{ url_for("index.index") }}'>← Back</a>
+    <h1 class="text-2xl font-bold my-4">
         {% block title %}
             Leaderboard
         {% endblock title %}
     </h1>
 {% endblock header %}
 {% block content %}
-    <table>
-        <tr>
-            <th>Player</th>
-            <th>Score</th>
+    <h2 class="text-l my-4">{{ club.name }}</h2>
+    <table class="table-auto w-full text-left border-collapse border border-slate-600">
+        <tr class="bg-slate-700">
+            <th class="border border-slate-600 p-2">Player</th>
+            <th class="border border-slate-600 p-2">Score</th>
         </tr>
         {% for user in users %}
             <tr>
-                <td>{{ user['username'] }}</td>
-                <td>{{ user['score'] }}</td>
+                <td class="border border-slate-600 p-2">{{ user['username'] }}</td>
+                <td class="border border-slate-600 p-2">{{ user['score'] }}</td>
             </tr>
         {% endfor %}
     </table>

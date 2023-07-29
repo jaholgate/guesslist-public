@@ -4,6 +4,8 @@ from werkzeug.exceptions import abort
 from guesslist.auth import login_required
 from guesslist.db import get_db
 from guesslist.round import add_round
+from guesslist.index import get_rounds
+
 
 bp = Blueprint("club", __name__, url_prefix="/club")
 
@@ -125,6 +127,7 @@ def join():
 @login_required
 def leaderboard(id):
     club_id = id
+    club = get_club(club_id)
     users = (
         get_db()
         .execute(
@@ -134,10 +137,10 @@ def leaderboard(id):
         .fetchall()
     )
 
-    return render_template("club/leaderboard.html", users=users)
+    return render_template("club/leaderboard.html", club=club, users=users)
 
 
-def get_club(id, check_author=True):
+def get_club(id):
     club = (
         get_db()
         .execute(
@@ -152,16 +155,17 @@ def get_club(id, check_author=True):
     if club is None:
         abort(404, f"Club id {id} doesn't exist.")
 
-    if check_author and club["admin_id"] != g.user["id"]:
-        abort(403)
+    # if check_author and club["admin_id"] != g.user["id"]:
+    #     abort(403)
 
     return club
 
 
-@bp.route("/<int:id>/update", methods=("GET", "POST"))
+@bp.route("/<int:id>/manage", methods=("GET", "POST"))
 @login_required
-def update(id):
+def manage(id):
     club = get_club(id)
+    rounds = get_rounds()
 
     if request.method == "POST":
         name = request.form["name"]
@@ -178,7 +182,7 @@ def update(id):
             db.commit()
             return redirect(url_for("index.index"))
 
-    return render_template("club/update.html", club=club)
+    return render_template("club/manage.html", club=club, rounds=rounds)
 
 
 @bp.route("/<int:id>/delete", methods=("POST",))

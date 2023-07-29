@@ -14,11 +14,17 @@ def index():
         club = db.execute(
             "SELECT id, name, admin_id FROM club WHERE id = ?", (g.user["club_id"],)
         ).fetchone()
-        rounds = db.execute(
-            "SELECT id, name, description, status, created, club_id"
-            " FROM round WHERE club_id = ?",
-            (g.user["club_id"],),
-        ).fetchall()
+        rounds = get_rounds()
         return render_template("index.html", club=club, rounds=rounds)
     else:
         return render_template("index.html")
+
+
+def get_rounds():
+    db = get_db()
+    rounds = db.execute(
+        "SELECT id, name, description, status, created, club_id"
+        " FROM round WHERE club_id = ?",
+        (g.user["club_id"],),
+    ).fetchall()
+    return rounds

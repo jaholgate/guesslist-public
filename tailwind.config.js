@@ -2,7 +2,11 @@
 module.exports = {
 	content: ['./guesslist/templates/*.html', './guesslist/templates/**/*.html'],
 	theme: {
-		extend: {},
+		extend: {
+			// fontFamily: {
+			// 	sans: ['Rubik', defaultTheme.fontFamily.sans],
+			// },
+		},
 	},
-	plugins: [],
+	plugins: [require('@tailwindcss/forms')],
 };

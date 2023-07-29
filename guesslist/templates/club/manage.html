@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block header %}
+    <a class="hover:underline" href='{{ url_for("index.index") }}'>← Back</a>
+    <h1 class="text-2xl font-bold my-4">
+        {% block title %}
+            Manage club
+        {% endblock title %}
+    </h1>
+{% endblock header %}
+{% block content %}
+    <div class="bg-slate-700 mb-4 p-4 rounded-lg">
+        <h3 class="text-l font-bold mb-4">Manage rounds</h3>
+        <ul>
+            <li class="grow">
+                <a class="btn-primary" href='{{ url_for("round.add") }}'>Add round</a>
+            </li>
+            {% if rounds and rounds[0]['status'] == 'pending' %}
+                <li class="grow mt-4">
+                    <a class="btn-primary mb-2"
+                       href="{{ url_for('round.start', id=rounds[0]['id']) }}">Open club</a>
+                    <span>Opens the first round for song submissions. Each round will open when the previous one closes.</span>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+    <div class="bg-slate-700 mb-4 p-4 rounded-lg">
+        <h3 class="text-l font-bold mb-4">Rename club</h3>
+        <form method="post">
+            <label class="block mb-2" for="title">Club name</label>
+            <input class="form-input w-full rounded-lg mb-4 text-slate-800"
+                   name="name"
+                   id="name"
+                   placeholder="{{ club.name }}"
+                   value="{{ request.form['name'] }}"
+                   required />
+            <input class="btn-primary" type="submit" value="Save" />
+        </form>
+    </div>
+    {# If restoring, need to update delete function to remove club_id from all users in club and reset score to zero
+    <form action="{{ url_for('club.delete', id=club['id']) }}" method="post">
+        <input class="danger"
+               type="submit"
+               value="Delete"
+               onclick="return confirm('Are you sure?');" />
+    </form>
+     #}
+{% endblock content %}
