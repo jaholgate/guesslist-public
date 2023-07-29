@@ -149,6 +149,7 @@ def view(id):
         round_points=round_points,
         song_count=song_count,
         club_users_count=club_users_count,
+        guess_count=guess_count,
     )
 
 
