@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block header %}
     <a class="hover:underline" href='{{ url_for("index.index") }}'>← Back</a>
-    <div class="my-4">
-        <h1 class="text-2xl font-bold">
+    <div class="mt-4">
+        <h1 class="text-3xl">
             {% block title %}
                 {{ round['name'] }}
             {% endblock title %}
@@ -11,18 +11,25 @@
     </div>
 {% endblock header %}
 {% block content %}
+    <div class="border border-slate-100 rounded-lg p-4 mt-4">
+        {% if round['status'] == "pending" %}
+            <p>This round is not open yet</p>
+        {% elif round['status'] == "open_for_songs" %}
+            <p>{{ song_count }}/{{ club_users_count }} members have submitted a song</p>
+        {% elif round['status'] == "open_for_guesses" %}
+            <p>{{ guess_count }}/{{ club_users_count }} members have submitted their guesses</p>
+        {% elif round['status'] == "complete" %}
+            <p>Round complete!</p>
+        {% endif %}
+    </div>
     {% if round['status'] == "pending" %}
-        <p>This round is not open yet.</p>
-        {# {% if g.user['id'] == club['admin_id'] %}
-            <a class="btn-primary"
-               href="{{ url_for('round.update', id=round['id']) }}">Manage</a>
-        {% endif %} #}
-    {% endif %}
-    {% if round['status'] == "open_for_songs" %}
-        <p>{{ song_count }}/{{ club_users_count }} members have submitted a song</p>
+        {% if g.user['id'] == club['admin_id'] %}
+            <a class="btn-primary mt-6"
+               href="{{ url_for('round.manage', id=round['id']) }}">Manage round</a>
+        {% endif %}
     {% endif %}
     {% if round['status'] == "open_for_guesses" or round['status'] == "complete" %}
-        <a class="btn-primary"
+        <a class="btn-primary mt-4"
            href="{{ round['playlist_url'] }}"
            target="_blank">Listen to playlist</a>
     {% endif %}
@@ -49,9 +56,9 @@
     {% endif %}
     {% if round['status'] == "open_for_songs" and not user_song %}
         <div class="bg-slate-700 mt-6 p-4 rounded-lg">
-            <h3 class="text-xl font-bold mb-4">Submit your song</h3>
+            <h3 class="text-xl mb-4">Submit your song</h3>
             <form action="{{ url_for('round.submit', id=round['id']) }}" method="post">
-                <label class="text-lg" for="spotify_track_url">Spotify track URL</label>
+                <label for="spotify_track_url">Spotify track URL</label>
                 <input class="form-input w-full rounded-lg mt-2 text-slate-800"
                        name="spotify_track_url"
                        id="spotify_track_url"
@@ -63,7 +70,6 @@
         </div>
     {% endif %}
     {% if round['status'] == "open_for_guesses" %}
-        <p>{{ guess_count }}/{{ club_users_count }} members have submitted their guesses</p>
         {% if user_guess %}
             <p>You have submitted your guesses</p>
         {% else %}
@@ -119,9 +125,8 @@
         {% endif %}
     {% endif %}
     {% if round['status'] == "complete" %}
-        <p class="my-4">Round complete!</p>
         {% for song in songs %}
-            <div class="bg-slate-700 mb-4 p-4 rounded-lg">
+            <div class="bg-slate-700 mt-6 p-4 rounded-lg">
                 <div class="flex items-center space-x-4">
                     <div class="shrink-0">
                         <a href="https://open.spotify.com/track/{{ song['spotify_track_id'] }}"
@@ -160,11 +165,11 @@
                 </ul>
             </div>
         {% endfor %}
-        <h3 class="text-xl font-bold mt-10">Points for this round</h3>
+        <h3 class="text-xl mt-10">Points for this round</h3>
         <table class="w-full text-left border-collapse border border-slate-600 mt-4">
             <tr class="bg-slate-700">
                 <th class="font-normal border border-slate-600 p-2">Player</th>
-                <th class="font-normal border border-slate-600 p-2 text-right w-16">Score</th>
+                <th class="font-normal border border-slate-600 p-2 text-right w-16">Points</th>
             </tr>
             {% for user in round_points %}
                 <tr>

@@ -1,16 +1,17 @@
 {% extends "base.html" %}
 {% block header %}
     <a class="hover:underline" href='{{ url_for("index.index") }}'>← Back</a>
-    <h1 class="text-2xl font-bold my-4">
+    <h1 class="text-3xl mt-4">
         {% block title %}
             Manage club
         {% endblock title %}
     </h1>
+    <p class="text-lg italic mt-2">{{ club['name'] }}</p>
 {% endblock header %}
 {% block content %}
-    <div class="bg-slate-700 mb-4 p-4 rounded-lg">
-        <h3 class="text-lg font-bold mb-4">Manage rounds</h3>
-        <ul>
+    <div class="bg-slate-700 mt-4 p-4 rounded-lg">
+        <h3 class="text-xl">Manage rounds</h3>
+        <ul class="mt-4">
             <li class="grow">
                 <a class="btn-primary" href='{{ url_for("round.add") }}'>Add round</a>
             </li>
@@ -23,17 +24,17 @@
             {% endif %}
         </ul>
     </div>
-    <div class="bg-slate-700 mb-4 p-4 rounded-lg">
-        <h3 class="text-lg font-bold mb-4">Rename club</h3>
+    <div class="bg-slate-700 mt-6 p-4 rounded-lg">
+        <h3 class="text-xl mb-4">Rename club</h3>
         <form method="post">
-            <label class="block mb-2" for="title">Club name</label>
-            <input class="form-input w-full rounded-lg mb-4 text-slate-800"
+            <label class="block mt-4" for="title">Club name</label>
+            <input class="form-input w-full rounded-lg mt-2 text-slate-800"
                    name="name"
                    id="name"
                    placeholder="{{ club.name }}"
                    value="{{ request.form['name'] }}"
                    required />
-            <input class="btn-primary" type="submit" value="Save" />
+            <input class="btn-primary w-full mt-6" type="submit" value="Save" />
         </form>
     </div>
     {# If restoring, need to update delete function to remove club_id from all users in club and reset score to zero

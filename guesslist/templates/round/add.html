@@ -1,20 +1,29 @@
 {% extends "base.html" %}
 {% block header %}
-    <h1>
+    <a class="hover:underline"
+       href='{{ url_for("club.manage", id=club["id"]) }}'>← Back</a>
+    <h1 class="text-3xl mt-4">
         {% block title %}
             Add round
         {% endblock title %}
     </h1>
 {% endblock header %}
 {% block content %}
-    <form method="post">
-        <label for="name">Name</label>
-        <input name="name" id="name" value="{{ request.form['name'] }}" required />
-        <label for="description">Description</label>
-        <input name="description"
-               id="description"
-               value="{{ request.form['description'] }}"
-               required />
-        <input type="submit" value="Add" />
-    </form>
+    <div class="bg-slate-700 mt-6 p-4 rounded-lg">
+        <form method="post">
+            <label class="block" for="name">Name</label>
+            <input class="form-input w-full rounded-lg mt-2 text-slate-800"
+                   name="name"
+                   id="name"
+                   value="{{ request.form['name'] }}"
+                   required />
+            <label class="mt-4 block" for="description">Description</label>
+            <input class="form-input w-full rounded-lg mt-2 text-slate-800"
+                   name="description"
+                   id="description"
+                   value="{{ request.form['description'] }}"
+                   required />
+            <input class="btn-primary w-full mt-6" type="submit" value="Add" />
+        </form>
+    </div>
 {% endblock content %}

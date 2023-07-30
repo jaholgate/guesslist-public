@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block header %}
+    <a class="hover:underline"
+       href='{{ url_for("round.view", id=round["id"]) }}'>← Back</a>
+    <h1 class="text-3xl mt-4">
+        {% block title %}
+            Manage round
+        {% endblock title %}
+    </h1>
+    <p class="text-lg italic mt-2">{{ round['name'] }}</p>
+{% endblock header %}
+{% block content %}
+    {% if round['status'] != 'pending' %}
+        <div class="border border-slate-100 rounded-lg p-4 mt-4">
+            <p>You can only edit upcoming rounds.</p>
+        </div>
+    {% else %}
+        <div class="bg-slate-700 mt-6 p-4 rounded-lg">
+            <h3 class="text-xl">Edit round details</h3>
+            <form method="post">
+                <label class="mt-4 block" for="name">Round name</label>
+                <input class="form-input w-full rounded-lg mt-2 text-slate-800"
+                       name="name"
+                       id="name"
+                       value="{{ request.form['name'] }}"
+                       required />
+                <label class="mt-4 block" for="description">Round description</label>
+                <input class="form-input w-full rounded-lg mt-2 text-slate-800"
+                       name="description"
+                       id="description"
+                       value="{{ request.form['description'] }}"
+                       required />
+                <input class="btn-primary w-full mt-6" type="submit" value="Save" />
+            </form>
+        </div>
+        <div class="bg-slate-700 mt-6 p-4 rounded-lg">
+            <h3 class="text-xl mb-4">Delete round</h3>
+            <form action="{{ url_for('round.delete', id=round['id']) }}" method="post">
+                <input class="btn-primary w-full"
+                       type="submit"
+                       value="Delete"
+                       onclick="return confirm('Are you sure?');" />
+            </form>
+        </div>
+    {% endif %}
+{% endblock content %}

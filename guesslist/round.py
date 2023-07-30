@@ -7,6 +7,7 @@ from werkzeug.exceptions import abort
 from guesslist.auth import login_required
 from guesslist.db import get_db
 from guesslist.utilities import (
+    get_club,
     get_round,
     get_round_status,
     get_club_users_count,
@@ -31,6 +32,8 @@ CLIENT_ID_SECRET_B64 = (
 @bp.route("/add", methods=("GET", "POST"))
 @login_required
 def add():
+    club = get_club(g.user["id"])
+
     # For admin to add a round to club
     if request.method == "POST":
         name = request.form["name"]
@@ -49,7 +52,7 @@ def add():
             add_round(name, description, g.user["club_id"])
             return redirect(url_for("index.index"))
 
-    return render_template("round/add.html")
+    return render_template("round/add.html", club=club)
 
 
 def add_round(name, description, club_id):
@@ -69,6 +72,7 @@ def view(id):
     db = get_db()
 
     # Variables for render_template
+    club = get_club(g.user["id"])
     round_id = id
     round = get_round(round_id)
     songs = {}
@@ -147,6 +151,7 @@ def view(id):
 
     return render_template(
         "round/view.html",
+        club=club,
         round=round,
         songs=songs,
         user_song=user_song,
@@ -448,34 +453,42 @@ def start(id):
     return redirect(url_for("index.index"))
 
 
-# @bp.route("/<int:id>/update", methods=("GET", "POST"))
-# @login_required
-# def update(id):
-#     round = get_round(id)
+@bp.route("/<int:id>/manage", methods=("GET", "POST"))
+@login_required
+def manage(id):
+    round = get_round(id)
 
-#     if request.method == "POST":
-#         name = request.form["name"]
-#         error = None
+    if request.method == "POST":
+        name = request.form["name"]
+        description = request.form["description"]
 
-#         if not name:
-#             error = "round name is required."
+        error = None
 
-#         if error is not None:
-#             flash(error)
-#         else:
-#             db = get_db()
-#             db.execute("UPDATE round SET name = ?" " WHERE id = ?", (name, id))
-#             db.commit()
-#             return redirect(url_for("index.index"))
+        if not name:
+            error = "round name is required."
 
-#     return render_template("round/update.html", round=round)
+        if not description:
+            error = "round name is required."
+
+        if error is not None:
+            flash(error)
+        else:
+            db = get_db()
+            db.execute(
+                "UPDATE round SET name = ?, description = ?" " WHERE id = ?",
+                (name, description, id),
+            )
+            db.commit()
+            return redirect(url_for("index.index"))
+
+    return render_template("round/manage.html", round=round)
 
 
-# @bp.route("/<int:id>/delete", methods=("POST",))
-# @login_required
-# def delete(id):
-#     get_round(id)
-#     db = get_db()
-#     db.execute("DELETE FROM round WHERE id = ?", (id,))
-#     db.commit()
-#     return redirect(url_for("round.index"))
+@bp.route("/<int:id>/delete", methods=("POST",))
+@login_required
+def delete(id):
+    get_round(id)
+    db = get_db()
+    db.execute("DELETE FROM round WHERE id = ?", (id,))
+    db.commit()
+    return redirect(url_for("index.index"))
