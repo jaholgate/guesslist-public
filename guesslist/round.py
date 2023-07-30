@@ -333,6 +333,7 @@ def guess(id):
         db = get_db()
         error = None
 
+        print(data)
         # If user already guessed, reject
         user_already_guessed = db.execute(
             "SELECT id FROM guess WHERE user_id = ? AND round_id = ?",
@@ -363,7 +364,7 @@ def guess(id):
                 guess_username = values_array[1]
                 guess_user_id = db.execute(
                     "SELECT id FROM user WHERE username = ?",
-                    (guess_username),
+                    (guess_username,),
                 ).fetchone()["id"]
                 comment = values_array[2]
                 song_submitter_id = db.execute(
