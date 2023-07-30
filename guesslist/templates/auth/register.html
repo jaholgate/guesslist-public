@@ -1,21 +1,35 @@
 {% extends "base.html" %}
 {% block header %}
-    <h1>
+    <h1 class="text-3xl">
         {% block title %}
             Register
         {% endblock title %}
     </h1>
 {% endblock header %}
 {% block content %}
-    <form method="post">
-        <label for="email">Email address</label>
-        <input name="email" id="email" required />
-        <label for="username">Username</label>
-        <input name="username" id="username" required />
-        <label for="password">Password</label>
-        <input type="password" name="password" id="password" required />
-        <label for="club_id">Club ID (if you have one)</label>
-        <input name="club_id" id="club_id" />
-        <input type="submit" value="Register" />
+    <form class="mt-6" method="post">
+        <label class="block mt-2" for="email">Email address</label>
+        <input class="form-input w-full rounded-lg mt-2 text-slate-800"
+               name="email"
+               id="email"
+               required />
+        <p class="text-xs mt-2">Not visible to other members</p>
+        <label class="block mt-4" for="username">Username</label>
+        <input class="form-input w-full rounded-lg mt-2 text-slate-800"
+               name="username"
+               id="username"
+               required />
+        <p class="text-xs mt-2">Visible to other members in your club</p>
+        <label class="block mt-4" for="password">Password</label>
+        <input class="form-input w-full rounded-lg mt-2 text-slate-800"
+               type="password"
+               name="password"
+               id="password"
+               required />
+        <label class="block mt-4" for="club_id">Club ID (if you have one)</label>
+        <input class="form-input w-full rounded-lg mt-2 text-slate-800"
+               name="club_id"
+               id="club_id" />
+        <input class="btn-primary w-full my-6" type="submit" value="Register" />
     </form>
 {% endblock content %}
