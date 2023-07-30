@@ -6,6 +6,14 @@ from werkzeug.exceptions import abort
 
 from guesslist.auth import login_required
 from guesslist.db import get_db
+from guesslist.utilities import (
+    get_round,
+    get_round_status,
+    get_club_users_count,
+    get_song_count,
+    get_songs_this_round,
+    get_guess_count,
+)
 
 bp = Blueprint("round", __name__, url_prefix="/round")
 
@@ -438,70 +446,6 @@ def start(id):
     db.commit()
 
     return redirect(url_for("index.index"))
-
-
-def get_club_users_count(round_id):
-    # Get count of users in club
-    db = get_db()
-    club_users_count = db.execute(
-        "SELECT COUNT(*) FROM user WHERE club_id = ?", (g.user["club_id"],)
-    ).fetchone()["COUNT(*)"]
-    return club_users_count
-
-
-def get_round(id):
-    current_round = (
-        get_db()
-        .execute(
-            "SELECT id, name, description, created, status, playlist_url, club_id"
-            " FROM round"
-            " WHERE id = ?",
-            (id,),
-        )
-        .fetchone()
-    )
-
-    if current_round is None:
-        abort(404, f"round id {id} doesn't exist.")
-
-    return current_round
-
-
-def get_round_status(round_id):
-    db = get_db()
-    round_status = db.execute(
-        "SELECT status FROM round WHERE id = ?", (round_id,)
-    ).fetchone()["status"]
-    return round_status
-
-
-def get_song_count(round_id):
-    # Get count of songs in round
-    db = get_db()
-    song_count = db.execute(
-        "SELECT COUNT(*) FROM song WHERE club_id = ? and round_id = ?",
-        (g.user["club_id"], round_id),
-    ).fetchone()["COUNT(*)"]
-    return song_count
-
-
-def get_songs_this_round(round_id):
-    db = get_db()
-    songs = db.execute(
-        "SELECT spotify_track_id" " FROM song WHERE round_id = ? AND club_id = ? ",
-        (round_id, g.user["club_id"]),
-    ).fetchall()
-    return songs
-
-
-def get_guess_count(round_id):
-    # Get count of songs in round
-    db = get_db()
-    guess_count = db.execute(
-        "SELECT COUNT(*) FROM guess WHERE club_id = ? and round_id = ?",
-        (g.user["club_id"], round_id),
-    ).fetchone()["COUNT(*)"]
-    return guess_count
 
 
 # @bp.route("/<int:id>/update", methods=("GET", "POST"))

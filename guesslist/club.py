@@ -3,9 +3,8 @@ from werkzeug.exceptions import abort
 
 from guesslist.auth import login_required
 from guesslist.db import get_db
+from guesslist.utilities import get_club, get_rounds
 from guesslist.round import add_round
-from guesslist.index import get_rounds
-
 
 bp = Blueprint("club", __name__, url_prefix="/club")
 
@@ -138,27 +137,6 @@ def leaderboard(id):
     )
 
     return render_template("club/leaderboard.html", club=club, users=users)
-
-
-def get_club(id):
-    club = (
-        get_db()
-        .execute(
-            "SELECT club.id, name, club.created, admin_id, username"
-            " FROM club JOIN user ON club.admin_id = user.id"
-            " WHERE club.id = ?",
-            (id,),
-        )
-        .fetchone()
-    )
-
-    if club is None:
-        abort(404, f"Club id {id} doesn't exist.")
-
-    # if check_author and club["admin_id"] != g.user["id"]:
-    #     abort(403)
-
-    return club
 
 
 @bp.route("/<int:id>/manage", methods=("GET", "POST"))
