@@ -11,7 +11,13 @@
     </div>
 {% endblock header %}
 {% block content %}
-    {% if round['status'] == "pending" %}<p>This round is not open yet.</p>{% endif %}
+    {% if round['status'] == "pending" %}
+        <p>This round is not open yet.</p>
+        {# {% if g.user['id'] == club['admin_id'] %}
+            <a class="btn-primary"
+               href="{{ url_for('round.update', id=round['id']) }}">Manage</a>
+        {% endif %} #}
+    {% endif %}
     {% if round['status'] == "open_for_songs" %}
         <p>{{ song_count }}/{{ club_users_count }} members have submitted a song</p>
     {% endif %}
