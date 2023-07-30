@@ -13,7 +13,7 @@ from guesslist.utilities import (
     get_club_users_count,
     get_song_count,
     get_songs_this_round,
-    get_guess_count,
+    get_user_guess_count,
 )
 
 bp = Blueprint("round", __name__, url_prefix="/round")
@@ -84,7 +84,7 @@ def view(id):
     round_points = {}
     club_users_count = get_club_users_count(round_id)
     song_count = get_song_count(round_id)
-    guess_count = get_guess_count(round_id)
+    user_guess_count = get_user_guess_count(round_id)
 
     # Get song from round with user's id
     user_song = db.execute(
@@ -106,6 +106,8 @@ def view(id):
             " FROM song WHERE round_id = ? AND club_id = ? AND user_id != ? ",
             (round_id, g.user["club_id"], g.user["id"]),
         ).fetchall()
+        # Randomly shuffle the list to make it more difficult for users to guess who submitted what song
+        random.shuffle(songs_except_own)
 
         # Check if user has guessed
         user_guess = db.execute(
@@ -162,7 +164,7 @@ def view(id):
         round_points=round_points,
         song_count=song_count,
         club_users_count=club_users_count,
-        guess_count=guess_count,
+        user_guess_count=user_guess_count,
     )
 
 
@@ -388,11 +390,10 @@ def guess(id):
                 db.commit()
                 i = i + 1
 
-        # Check if all guesses received
-        # (Each user can guess on every other user's song, except their own).
+        # Check if all users have guessed
         club_users_count = get_club_users_count(round_id)
-        guess_count = get_guess_count(round_id)
-        if guess_count == (club_users_count * (club_users_count - 1)):
+        user_guess_count = get_user_guess_count(round_id)
+        if club_users_count == user_guess_count:
             # Update round status
             db.execute(
                 "UPDATE round SET status = ?" " WHERE id = ?",
@@ -443,10 +444,15 @@ def guess(id):
 def start(id):
     # For the admin to start the first round in a club
     round_id = id
+    club_id = g.user["club_id"]
     db = get_db()
     db.execute(
         "UPDATE round SET status = ?" " WHERE id = ?",
         ("open_for_songs", round_id),
+    )
+    db.execute(
+        "UPDATE club SET accepting_members = ?" " WHERE id = ?",
+        (0, club_id),
     )
     db.commit()
 

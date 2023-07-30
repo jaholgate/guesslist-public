@@ -8,32 +8,55 @@
             <li>In each round, submit songs on a theme</li>
             <li>Guess who submitted each song, and track your points on the leaderboard</li>
         </ol>
-        <ul>
-            <li>
-                <a href='{{ url_for("auth.register") }}'>Register</a>
+        <ul class="flex flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0 mb-6">
+            <li class="grow">
+                <a class="btn-primary" href='{{ url_for("auth.register") }}'>Register</a>
             </li>
-            <li>
-                <a href='{{ url_for("auth.login") }}'>Log In</a>
+            <li class="grow">
+                <a class="btn-primary" href='{{ url_for("auth.login") }}'>Log In</a>
             </li>
         </ul>
     {% endif %}
     <!-- If logged in but not in a club -->
     {% if g.user and not g.user['club_id'] %}
-        <ul>
-            <li>
-                <a href='{{ url_for("club.create") }}'>Create a club</a>
+        <h1 class="text-3xl">Welcome</h1>
+        <ul class="flex flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0 mt-6">
+            <li class="grow">
+                <a class="btn-primary" href='{{ url_for("club.create") }}'>Create a club</a>
             </li>
-            <li>
-                <a href='{{ url_for("club.join") }}'>Join a club</a>
+            <li class="grow">
+                <a class="btn-primary" href='{{ url_for("club.join") }}'>Join a club</a>
             </li>
         </ul>
     {% endif %}
     <!-- If logged in and in a club -->
     {% if g.user and g.user['club_id'] %}
-        <p>Your club:</p>
+        <p class="text-slate-300">Your club:</p>
         <h2 class="text-3xl mb-4">{{ club.name }}</h2>
+        {% if club['accepting_members'] == 1 %}
+            <div class="bg-slate-700 mt-4 p-4 rounded-lg">
+                <h3 class="text-xl">Invite friends</h3>
+                {% if club_users_count < 3 %}<p>To start the game, the club needs at least three members.</p>{% endif %}
+                <p class="mt-2">Share your club invite link:</p>
+                <p>/register</p>
+                {% if club_users_count >= 3 %}
+                    {% if g.user['id'] == club['admin_id'] %}
+                        <h3 class="text-xl mt-6">Start game</h3>
+                        <ul class="mt-4 ml-4 list-disc list-outside">
+                            <li>The first round will open for song submissions.</li>
+                            <li>Each round will open when the previous one is completed.</li>
+                            <li class="font-bold">New members will not be able to join the club. Make sure everyone is in!</li>
+                        </ul>
+                        <a class="btn-primary w-full mt-4"
+                           href="{{ url_for('round.start', id=rounds[0]['id']) }}">Start game</a>
+                    {% else %}
+                        <p class="mt-2">Waiting for the club owner to start the game...</p>
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% endif %}
         <!-- If club admin -->
-        <ul class="flex flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0 mb-6">
+        <ul class="flex flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0 mt-6">
             <li class="grow">
                 <a class="btn-primary"
                    href="{{ url_for('club.leaderboard', id=club['id']) }}">Leaderboard</a>
@@ -46,14 +69,24 @@
             {% endif %}
         </ul>
         {% if rounds %}
-            <h3 class="text-xl mb-2">Rounds</h3>
+            <h3 class="text-xl mt-6">Rounds</h3>
             <ol class="list-decimal list-inside">
                 {% for round in rounds %}
                     <a class="block" href="{{ url_for('round.view', id=round['id']) }}">
-                        <li class="bg-slate-700 hover:bg-slate-600 p-4 mb-4 rounded-lg text-xl">
-                            <h4 class="inline -ml-2">{{ round['name'] }}</h4>
+                        <li class="bg-slate-700 hover:bg-slate-600 p-4 mt-4 rounded-lg text-xl">
+                            <h4 class="inline -ml-1">{{ round['name'] }}</h4>
                             <p class="text-base">{{ round['description'] }}</p>
-                            <p class="text-sm text-right">{{ round['status'] }}</p>
+                            <p class="text-sm text-slate-300 mt-2">
+                                {% if round['status'] == 'pending' %}
+                                    Upcoming
+                                {% elif round['status'] == 'open_for_songs' %}
+                                    Open - waiting for songs
+                                {% elif round['status'] == 'open_for_guesses' %}
+                                    Open - waiting for guesses
+                                {% elif round['status'] == 'complete' %}
+                                    Complete
+                                {% endif %}
+                            </p>
                         </li>
                     </a>
                 {% endfor %}

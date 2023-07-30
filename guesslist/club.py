@@ -98,25 +98,29 @@ def join():
         if error is not None:
             flash(error)
         else:
-            club = (
-                get_db()
-                .execute(
-                    "SELECT id" " FROM club " " WHERE id = ?",
-                    (club_id,),
-                )
-                .fetchone()
-            )
-            if not club:
-                error = "Club not found."
-            if error is not None:
-                flash(error)
+            # TODO: refactor this, as it is repeated in auth.py
+            # Check if club id exists
+            db = get_db()
+            club_id_check = db.execute(
+                "SELECT id, accepting_members FROM club WHERE id = ?",
+                (club_id,),
+            ).fetchone()
+            if not club_id_check:
+                error = "Club ID was not found."
+            elif club_id_check["accepting_members"] == 0:
+                error = "The club you entered is not accepting members."
             else:
-                db = get_db()
+                # If true, add club_id to user record
                 db.execute(
                     "UPDATE user SET club_id = ?" " WHERE id = ?",
                     (club_id, g.user["id"]),
                 )
                 db.commit()
+
+            if error is not None:
+                flash(error)
+
+            else:
                 return redirect(url_for("index.index"))
 
     return render_template("club/join.html")

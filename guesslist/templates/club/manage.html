@@ -11,18 +11,7 @@
 {% block content %}
     <div class="bg-slate-700 mt-4 p-4 rounded-lg">
         <h3 class="text-xl">Manage rounds</h3>
-        <ul class="mt-4">
-            <li class="grow">
-                <a class="btn-primary" href='{{ url_for("round.add") }}'>Add round</a>
-            </li>
-            {% if rounds and rounds[0]['status'] == 'pending' %}
-                <li class="grow mt-4">
-                    <a class="btn-primary mb-2"
-                       href="{{ url_for('round.start', id=rounds[0]['id']) }}">Open club</a>
-                    <span>Opens the first round for song submissions. Each round will open when the previous one closes.</span>
-                </li>
-            {% endif %}
-        </ul>
+        <a class="btn-primary mt-4" href='{{ url_for("round.add") }}'>Add round</a>
     </div>
     <div class="bg-slate-700 mt-6 p-4 rounded-lg">
         <h3 class="text-xl mb-4">Rename club</h3>

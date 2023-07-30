@@ -39,7 +39,9 @@
     <main class="max-w-xl mx-auto bg-slate-800 p-4">
         {% block header %}
         {% endblock header %}
-        {% for message in get_flashed_messages() %}<div class="flash">{{ message }}</div>{% endfor %}
+        {% for message in get_flashed_messages() %}
+            <div class="border border-slate-400 rounded-lg p-4 mt-4">{{ message }}</div>
+        {% endfor %}
         {% block content %}
         {% endblock content %}
     </main>

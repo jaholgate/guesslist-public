@@ -1,15 +1,22 @@
 {% extends "base.html" %}
 {% block header %}
-    <h1>
+    <a class="hover:underline" href='{{ url_for("index.index") }}'>← Back</a>
+    <h1 class="text-3xl mt-4">
         {% block title %}
             Create club
         {% endblock title %}
     </h1>
 {% endblock header %}
 {% block content %}
-    <form method="post">
-        <label for="title">Name</label>
-        <input name="name" id="name" value="{{ request.form['name'] }}" required />
-        <input type="submit" value="Save" />
-    </form>
+    <div class="bg-slate-700 mt-6 p-4 rounded-lg">
+        <form method="post">
+            <label class="block" for="name">Club name</label>
+            <input class="form-input w-full rounded-lg mt-2 text-slate-800"
+                   name="name"
+                   id="name"
+                   value="{{ request.form['name'] }}"
+                   required />
+            <input class="btn-primary w-full mt-6" type="submit" value="Create" />
+        </form>
+    </div>
 {% endblock content %}

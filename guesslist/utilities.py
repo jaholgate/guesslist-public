@@ -6,7 +6,7 @@ def get_club(club_id):
     club = (
         get_db()
         .execute(
-            "SELECT club.id, name, club.created, admin_id, username"
+            "SELECT club.id, name, accepting_members, club.created, admin_id, username"
             " FROM club JOIN user ON club.admin_id = user.id"
             " WHERE club.id = ?",
             (club_id,),
@@ -14,8 +14,8 @@ def get_club(club_id):
         .fetchone()
     )
 
-    if club is None:
-        abort(404, f"Club id {club_id} doesn't exist.")
+    # if club is None:
+    #     abort(404, f"Club id {club_id} doesn't exist.")
 
     # if check_author and club["admin_id"] != g.user["id"]:
     #     abort(403)
@@ -86,6 +86,17 @@ def get_songs_this_round(round_id):
     return songs
 
 
+# Number of users who have guessed in the current round
+def get_user_guess_count(round_id):
+    db = get_db()
+    user_guess_count = db.execute(
+        "SELECT COUNT(DISTINCT user_id) FROM guess WHERE club_id = ? and round_id = ?",
+        (g.user["club_id"], round_id),
+    ).fetchone()["COUNT(DISTINCT user_id)"]
+    return user_guess_count
+
+
+# Total number of guesses in the current round
 def get_guess_count(round_id):
     db = get_db()
     guess_count = db.execute(

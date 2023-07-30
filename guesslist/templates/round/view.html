@@ -11,13 +11,13 @@
     </div>
 {% endblock header %}
 {% block content %}
-    <div class="border border-slate-100 rounded-lg p-4 mt-4">
+    <div class="border border-slate-400 rounded-lg p-4 mt-4">
         {% if round['status'] == "pending" %}
             <p>This round is not open yet</p>
         {% elif round['status'] == "open_for_songs" %}
             <p>{{ song_count }}/{{ club_users_count }} members have submitted a song</p>
         {% elif round['status'] == "open_for_guesses" %}
-            <p>{{ guess_count }}/{{ club_users_count }} members have submitted their guesses</p>
+            <p>{{ user_guess_count }}/{{ club_users_count }} members have submitted guesses</p>
         {% elif round['status'] == "complete" %}
             <p>Round complete!</p>
         {% endif %}
@@ -65,6 +65,7 @@
                        value="{{ request.form['spotify_track_url'] }}"
                        required />
                 <p class="text-xs mt-2">E.g. https://open.spotify.com/track/7igDDKaYTMkV5xbse143IW</p>
+                {# TODO add input for user comment #}
                 <input class="btn-primary mt-4 w-full" type="submit" value="Submit" />
             </form>
         </div>

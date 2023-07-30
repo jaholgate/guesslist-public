@@ -52,26 +52,31 @@ def register():
 
                 # If the user registered with a club id
                 if club_id:
+                    # TODO: refactor this, as it is repeated in club.py
                     # Check if club id exists
                     club_id_check = db.execute(
-                        "SELECT id FROM club WHERE id = ?", (club_id,)
+                        "SELECT id, accepting_members FROM club WHERE id = ?",
+                        (club_id,),
                     ).fetchone()
-                    if club_id_check:
+                    if not club_id_check:
+                        error = (
+                            "Successfully registered, but your club ID was not found."
+                        )
+                    elif club_id_check["accepting_members"] == 0:
+                        error = "Successfully registered, but the club you entered is not accepting members."
+                    else:
                         # If true, add club_id to user record
                         db.execute(
                             "UPDATE user SET club_id = ?" " WHERE id = ?",
                             (club_id, user["id"]),
                         )
                         db.commit()
-                    else:
-                        error = (
-                            "Successfully registered, but your club ID was not found."
-                        )
 
                 # Log the user in
                 session.clear()
                 session["user_id"] = user["id"]
-                flash(error)
+                if error:
+                    flash(error)
                 return redirect(url_for("index"))
 
         flash(error)
