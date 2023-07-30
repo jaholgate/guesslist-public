@@ -155,15 +155,15 @@
             </div>
         {% endfor %}
         <h3 class="text-xl font-bold mt-10">Points for this round</h3>
-        <table class="table-auto w-full text-left border-collapse border border-slate-600 mt-4">
+        <table class="w-full text-left border-collapse border border-slate-600 mt-4">
             <tr class="bg-slate-700">
-                <th class="border border-slate-600 p-2">Player</th>
-                <th class="border border-slate-600 p-2 text-right">Score</th>
+                <th class="font-normal border border-slate-600 p-2">Player</th>
+                <th class="font-normal border border-slate-600 p-2 text-right w-16">Score</th>
             </tr>
             {% for user in round_points %}
                 <tr>
                     <td class="border border-slate-600 p-2">{{ user['username'] }}</td>
-                    <td class="border border-slate-600 p-2 text-right">{{ user['points'] }}</td>
+                    <td class="border border-slate-600 p-2 text-right w-16">{{ user['points'] }}</td>
                 </tr>
             {% endfor %}
         </table>

@@ -16,7 +16,7 @@
 </head>
 <body class="bg-slate-800 text-slate-100">
     <header class="bg-slate-950 mb-4">
-        <nav class="max-w-md mx-auto flex justify-between p-4">
+        <nav class="max-w-xl mx-auto flex justify-between p-4">
             <h1 class="text-xl font-bold">
                 <a href='{{ url_for("index.index") }}'>guesslist</a>
             </h1>
@@ -36,7 +36,7 @@
             </ul>
         </nav>
     </header>
-    <main class="max-w-md mx-auto bg-slate-800 p-4">
+    <main class="max-w-xl mx-auto bg-slate-800 p-4">
         {% block header %}
         {% endblock header %}
         {% for message in get_flashed_messages() %}<div class="flash">{{ message }}</div>{% endfor %}

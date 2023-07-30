@@ -9,15 +9,15 @@
 {% endblock header %}
 {% block content %}
     <h2 class="text-lg my-4">{{ club.name }}</h2>
-    <table class="table-auto w-full text-left border-collapse border border-slate-600">
+    <table class="w-full text-left border-collapse border border-slate-600">
         <tr class="bg-slate-700">
             <th class="border border-slate-600 p-2">Player</th>
-            <th class="border border-slate-600 p-2">Score</th>
+            <th class="border border-slate-600 p-2 w-16 text-right">Score</th>
         </tr>
         {% for user in users %}
             <tr>
                 <td class="border border-slate-600 p-2">{{ user['username'] }}</td>
-                <td class="border border-slate-600 p-2">{{ user['score'] }}</td>
+                <td class="border border-slate-600 p-2 w-16 text-right">{{ user['score'] }}</td>
             </tr>
         {% endfor %}
     </table>
