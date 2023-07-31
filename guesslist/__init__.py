@@ -13,6 +13,7 @@ def create_app(test_config=None):
         HASHIDS_ALPHABET="ABCDEFGHIJKLMNPQRSTUVWXYZ123456789",
         HASHIDS_MIN_LENGTH="6",
         HASHIDS_SALT="music for chameleons",
+        # SEND_FILE_MAX_AGE_DEFAULT=0,
     )
 
     hashids = Hashids(app)

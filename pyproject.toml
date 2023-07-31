@@ -1,7 +1,7 @@
 [project]
-name = "flaskr"
+name = "guesslist"
 version = "1.0.0"
-description = "The basic blog app built in the Flask tutorial."
+description = "a musical guessing game"
 dependencies = [
     "flask",
 ]
