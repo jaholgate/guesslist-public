@@ -2,15 +2,16 @@
 {% block content %}
     <!-- If logged-out -->
     {% if not g.user %}
-        <h2 class="text-4xl mt-6 text-center flex justify-center flex-col space-y-2 md:flex-row md:space-x-4 md:space-y-0">
+        <h2 class="text-4xl mt-2 text-center flex justify-center flex-col md:flex-row md:space-x-4">
             <span>a musical</span><span>guessing game</span>
         </h2>
         <h3 class="text-2xl mt-10">How it works</h3>
         <ol class="list-decimal list-inside mt-4">
-            <li>Create a club and invite your friends</li>
-            <li>In each round, submit songs on a theme</li>
-            <li>Listen to the songs on Spotify</li>
-            <li>Guess who submitted each song, and track your points on the leaderboard</li>
+            <li>Create a club and invite your friends.</li>
+            <li>In each round, submit songs on a theme.</li>
+            <li>guesslist creates a Spotify playlist of your songs.</li>
+            <li>Guess who submitted each song. Win points for correct guesses.</li>
+            <li>Track your points on the club leaderboard.</li>
         </ol>
         <ul class="flex flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0 my-6">
             <li class="grow">
