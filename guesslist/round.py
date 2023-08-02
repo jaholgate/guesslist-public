@@ -33,8 +33,9 @@ CLIENT_ID_SECRET_B64 = (
 @login_required
 def add():
     club = get_club(g.user["id"])
+    if g.user["id"] != club["admin_id"]:
+        return redirect(url_for("index.index"))
 
-    # For admin to add a round to club
     if request.method == "POST":
         name = request.form["name"]
         description = request.form["description"]
@@ -64,7 +65,7 @@ def add_round(name, description, club_id):
     db.commit()
 
 
-@bp.route("/<int:id>/")
+@bp.route("/<hashid:id>/")
 @login_required
 def view(id):
     # Defines the round view screen depending on round status
@@ -320,10 +321,10 @@ def submit(id):
                 )
                 db.commit()
 
-            return redirect("/round/" + str(round_id))
+            return redirect(url_for("round.view", id=round_id))
 
 
-@bp.route("/<int:id>/guess", methods=["POST"])
+@bp.route("/<hashid:id>/guess", methods=["POST"])
 @login_required
 def guess(id):
     if request.method == "POST":
@@ -437,10 +438,10 @@ def guess(id):
             )
             db.commit()
 
-        return redirect("/round/" + str(round_id))
+        return redirect(url_for("round.view", id=round_id))
 
 
-@bp.route("/<int:id>/start")
+@bp.route("/<hashid:id>/start")
 @login_required
 def start(id):
     # For the admin to start the first round in a club
@@ -460,7 +461,7 @@ def start(id):
     return redirect(url_for("index.index"))
 
 
-@bp.route("/<int:id>/manage", methods=("GET", "POST"))
+@bp.route("/<hashid:id>/manage", methods=("GET", "POST"))
 @login_required
 def manage(id):
     round = get_round(id)
@@ -491,7 +492,7 @@ def manage(id):
     return render_template("round/manage.html", round=round)
 
 
-@bp.route("/<int:id>/delete", methods=("POST",))
+@bp.route("/<hashid:id>/delete", methods=("POST",))
 @login_required
 def delete(id):
     get_round(id)

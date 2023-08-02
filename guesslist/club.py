@@ -126,7 +126,7 @@ def join():
     return render_template("club/join.html")
 
 
-@bp.route("/<int:id>/leaderboard")
+@bp.route("/<hashid:id>/leaderboard")
 @login_required
 def leaderboard(id):
     club_id = id
@@ -143,10 +143,12 @@ def leaderboard(id):
     return render_template("club/leaderboard.html", club=club, users=users)
 
 
-@bp.route("/<int:id>/manage", methods=("GET", "POST"))
+@bp.route("/<hashid:id>/manage", methods=("GET", "POST"))
 @login_required
 def manage(id):
     club = get_club(id)
+    if g.user["id"] != club["admin_id"]:
+        return redirect(url_for("index.index"))
     rounds = get_rounds()
 
     if request.method == "POST":
@@ -171,6 +173,8 @@ def manage(id):
 @login_required
 def delete(id):
     get_club(id)
+    if g.user["id"] != club["admin_id"]:
+        return redirect(url_for("index.index"))
     db = get_db()
     db.execute("DELETE FROM club WHERE id = ?", (id,))
     # TODO remove club_id from all users in club?
