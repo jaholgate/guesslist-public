@@ -290,11 +290,15 @@ def submit(id):
                 }
 
                 # POST new playlist to the guesslist Spotify user. Format response as JSON
-                r = requests.post(
-                    BASE_URL + "users/" + SPOTIFY_USER_ID + "/playlists",
-                    headers=headers,
-                    json=json,
-                ).json()
+                with current_app.app_context():
+                    r = requests.post(
+                        BASE_URL
+                        + "users/"
+                        + current_app.config["SPOTIFY_USER_ID"]
+                        + "/playlists",
+                        headers=headers,
+                        json=json,
+                    ).json()
 
                 playlist_id = r["id"]
                 playlist_url = r["external_urls"]["spotify"]
