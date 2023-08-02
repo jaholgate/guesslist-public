@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS song (
   name TEXT NOT NULL,
   image_url TEXT,
   spotify_track_id TEXT NOT NULL,
+  comment TEXT,
   user_id NOT NULL,
   round_id INTEGER NOT NULL,
   club_id INTEGER NOT NULL,

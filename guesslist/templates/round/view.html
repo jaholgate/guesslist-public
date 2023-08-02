@@ -18,6 +18,7 @@
             <p>{{ song_count }}/{{ club_users_count }} members have submitted a song</p>
         {% elif round['status'] == "open_for_guesses" %}
             <p>{{ user_guess_count }}/{{ club_users_count }} members have submitted guesses</p>
+            {% if user_guess %}<p>You have submitted your guesses</p>{% endif %}
         {% elif round['status'] == "complete" %}
             <p>Round complete!</p>
         {% endif %}
@@ -56,74 +57,74 @@
     {% endif %}
     {% if round['status'] == "open_for_songs" and not user_song %}
         <div class="bg-slate-700 mt-6 p-4 rounded-lg">
-            <h3 class="text-xl mb-4">Submit your song</h3>
+            <h3 class="text-xl">Submit your song</h3>
             <form action="{{ url_for('round.submit', id=round['id']) }}" method="post">
-                <label for="spotify_track_url">Spotify track URL</label>
+                <label class="block mt-4" for="spotify_track_url">Spotify track URL</label>
                 <input class="form-input w-full rounded-lg mt-2 text-slate-800"
                        name="spotify_track_url"
                        id="spotify_track_url"
                        value="{{ request.form['spotify_track_url'] }}"
                        required />
                 <p class="text-xs mt-2">E.g. https://open.spotify.com/track/7igDDKaYTMkV5xbse143IW</p>
-                {# TODO add input for user comment #}
+                <label class="block mt-4" for="comment">Comment</label>
+                <input class="form-input w-full rounded-lg mt-2 text-slate-800"
+                       name="comment"
+                       id="comment"
+                       value="{{ request.form['comment'] }}" />
                 <input class="btn-primary mt-4 w-full" type="submit" value="Submit" />
             </form>
         </div>
     {% endif %}
-    {% if round['status'] == "open_for_guesses" %}
-        {% if user_guess %}
-            <p>You have submitted your guesses</p>
-        {% else %}
-            <h3 class="text-xl mt-6">Submit your guesses</h3>
-            <form id="guess-form"
-                  action="{{ url_for('round.guess', id=round['id']) }}"
-                  method="post">
-                {% for song in songs_except_own %}
-                    <div class="bg-slate-700 mt-4 p-4 rounded-lg">
-                        <div class="flex items-center space-x-4">
-                            <div class="shrink-0">
-                                <a href="https://open.spotify.com/track/{{ song['spotify_track_id'] }}"
-                                   target="_blank">
-                                    <img class="h-16 w-16"
-                                         src="{{ song['image_url'] }}"
-                                         alt='Cover artwork for {{ song["name"] }}'
-                                         width="100"
-                                         height="100" />
-                                </a>
-                            </div>
-                            <div>
-                                <div class="text-xl font-medium">{{ song["artist"] }}</div>
-                                <p class="text-slate-200">{{ song["name"] }}</p>
-                            </div>
+    {% if round['status'] == "open_for_guesses" and not user_guess %}
+        <h3 class="text-xl mt-6">Submit your guesses</h3>
+        <form id="guess-form"
+              action="{{ url_for('round.guess', id=round['id']) }}"
+              method="post">
+            {% for song in songs_except_own %}
+                <div class="bg-slate-700 mt-4 p-4 rounded-lg">
+                    <div class="flex items-center space-x-4">
+                        <div class="shrink-0">
+                            <a href="https://open.spotify.com/track/{{ song['spotify_track_id'] }}"
+                               target="_blank">
+                                <img class="h-16 w-16"
+                                     src="{{ song['image_url'] }}"
+                                     alt='Cover artwork for {{ song["name"] }}'
+                                     width="100"
+                                     height="100" />
+                            </a>
                         </div>
-                        <fieldset class="guess-form__fieldset">
-                            <input class="guess-form__input"
-                                   type="hidden"
-                                   name="song-id"
-                                   value="{{ song['id'] }}" />
-                            <label class="block mt-4 mb-2" for="user-id">Who submitted this?</label>
-                            <select class="select w-full rounded-lg text-slate-800 guess-form__input"
-                                    name="user-id">
-                                <option class="text-slate-800" selected disabled>Select:</option>
-                                {% for user in users %}
-                                    {% if user['id'] != g.user['id'] %}<option class="text-slate-800">{{ user['username'] }}</option>{% endif %}
-                                {% endfor %}
-                            </select>
-                            <label class="block mt-4 mb-2" for="comment">Comment</label>
-                            <input class="form-input w-full text-slate-800 rounded-lg guess-form__input"
-                                   type="text"
-                                   name="comment" />
-                            <input class="guess-form__input--all-values"
-                                   type="hidden"
-                                   name="{{ loop.index }}"
-                                   value="" />
-                        </fieldset>
+                        <div>
+                            <div class="text-xl font-medium">{{ song["artist"] }}</div>
+                            <p class="text-slate-200">{{ song["name"] }}</p>
+                        </div>
                     </div>
-                {% endfor %}
-                <button class="btn-primary mt-6 w-full guess-form__button">Submit guesses</button>
-            </form>
-            <script type="text/javascript" src="/static/guess.js"></script>
-        {% endif %}
+                    <fieldset class="guess-form__fieldset">
+                        <input class="guess-form__input"
+                               type="hidden"
+                               name="song-id"
+                               value="{{ song['id'] }}" />
+                        <label class="block mt-4 mb-2" for="user-id">Who submitted this?</label>
+                        <select class="select w-full rounded-lg text-slate-800 guess-form__input"
+                                name="user-id">
+                            <option class="text-slate-800" selected disabled>Select:</option>
+                            {% for user in users %}
+                                {% if user['id'] != g.user['id'] %}<option class="text-slate-800">{{ user['username'] }}</option>{% endif %}
+                            {% endfor %}
+                        </select>
+                        <label class="block mt-4 mb-2" for="comment">Comment</label>
+                        <input class="form-input w-full text-slate-800 rounded-lg guess-form__input"
+                               type="text"
+                               name="comment" />
+                        <input class="guess-form__input--all-values"
+                               type="hidden"
+                               name="{{ loop.index }}"
+                               value="" />
+                    </fieldset>
+                </div>
+            {% endfor %}
+            <button class="btn-primary mt-6 w-full guess-form__button">Submit guesses</button>
+        </form>
+        <script type="text/javascript" src="/static/guess.js"></script>
     {% endif %}
     {% if round['status'] == "complete" %}
         {% for song in songs %}
@@ -147,19 +148,20 @@
                 <p class="mt-4">
                     Submitted by: <span class="font-bold">{{ song ["username"] }}</span>
                 </p>
+                {% if song['comment'] %}<p class="text-sm">“{{ song["comment"] }}”</p>{% endif %}
                 <ul>
                     {% for guess in guesses %}
                         {% if guess['song_id'] == song['id'] %}
                             <li class="mt-6">
-                                <div class="flex items-center justify-between">
+                                <div class="flex items-end justify-between">
                                     <p>
                                         <span class="font-bold">{{ guess.username }}</span> guessed <span class="font-bold">{{ guess.guess_username }}</span>
                                     </p>
                                     {% if guess['guess_user_id'] == song['user_id'] %}
-                                        <div class="text-xl font-bold p-1 w-8 h-8 rounded-full text-center">+1</div>
+                                        <div class="text-xl font-bold p-1 w-8 h-8 rounded-full text-center align-baseline">+1</div>
                                     {% endif %}
                                 </div>
-                                {% if guess['comment'] %}<p class="italic">{{ guess.comment }}</p>{% endif %}
+                                {% if guess['comment'] %}<p class="text-sm">“{{ guess.comment }}”</p>{% endif %}
                             </li>
                         {% endif %}
                     {% endfor %}

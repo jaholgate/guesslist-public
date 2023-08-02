@@ -6,9 +6,7 @@ def get_club(club_id):
     club = (
         get_db()
         .execute(
-            "SELECT club.id, name, accepting_members, club.created, admin_id, username"
-            " FROM club JOIN user ON club.admin_id = user.id"
-            " WHERE club.id = ?",
+            "SELECT * FROM club WHERE club.id = ?",
             (club_id,),
         )
         .fetchone()
@@ -36,9 +34,7 @@ def get_round(round_id):
     current_round = (
         get_db()
         .execute(
-            "SELECT id, name, description, created, status, playlist_url, club_id"
-            " FROM round"
-            " WHERE id = ?",
+            "SELECT * FROM round WHERE id = ?",
             (round_id,),
         )
         .fetchone()
@@ -53,8 +49,7 @@ def get_round(round_id):
 def get_rounds():
     db = get_db()
     rounds = db.execute(
-        "SELECT id, name, description, status, created, club_id"
-        " FROM round WHERE club_id = ?",
+        "SELECT * FROM round WHERE club_id = ?",
         (g.user["club_id"],),
     ).fetchall()
     return rounds

@@ -88,8 +88,7 @@ def view(id):
 
     # Get song from round with user's id
     user_song = db.execute(
-        "SELECT artist, name, image_url, spotify_track_id, user_id, round_id, club_id"
-        " FROM song WHERE user_id = ? AND round_id = ? AND club_id = ?",
+        "SELECT * FROM song WHERE user_id = ? AND round_id = ? AND club_id = ?",
         (g.user["id"], round_id, g.user["club_id"]),
     ).fetchone()
 
@@ -102,8 +101,9 @@ def view(id):
 
         # Get songs submitted by other users
         songs_except_own = db.execute(
-            "SELECT id, artist, name, image_url, spotify_track_id, user_id, round_id, club_id"
-            " FROM song WHERE round_id = ? AND club_id = ? AND user_id != ? ",
+            "SELECT *"
+            " FROM song"
+            " WHERE round_id = ? AND club_id = ? AND user_id != ? ",
             (round_id, g.user["club_id"], g.user["id"]),
         ).fetchall()
         # Randomly shuffle the list to make it more difficult for users to guess who submitted what song
@@ -120,7 +120,7 @@ def view(id):
     if get_round_status(round_id) == "complete":
         # Get all songs
         songs = db.execute(
-            "SELECT song.id, artist, name, image_url, spotify_track_id, user_id, round_id, song.club_id, username"
+            "SELECT song.id, artist, name, image_url, spotify_track_id, comment, user_id, round_id, song.club_id, username"
             " FROM song "
             " JOIN user ON song.user_id = user.id"
             " WHERE song.round_id = ? AND song.club_id = ?",
@@ -204,6 +204,7 @@ def submit(id):
     if request.method == "POST":
         round_id = id
         spotify_track_url = request.form["spotify_track_url"]
+        comment = request.form["comment"]
         db = get_db()
         error = None
 
@@ -249,13 +250,14 @@ def submit(id):
 
             # Add song to database
             db.execute(
-                "INSERT INTO song (artist, name, image_url, spotify_track_id, user_id, round_id, club_id)"
-                " VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO song (artist, name, image_url, spotify_track_id, comment, user_id, round_id, club_id)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     r["artists"][0]["name"],
                     r["name"],
                     r["album"]["images"][0]["url"],
                     r["id"],
+                    comment,
                     g.user["id"],
                     round_id,
                     g.user["club_id"],
