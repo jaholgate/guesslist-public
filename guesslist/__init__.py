@@ -13,7 +13,10 @@ def create_app(test_config=None):
         HASHIDS_ALPHABET="ABCDEFGHIJKLMNPQRSTUVWXYZ123456789",
         HASHIDS_MIN_LENGTH="6",
         HASHIDS_SALT="music for chameleons",
-        # SEND_FILE_MAX_AGE_DEFAULT=0,
+        SPOTIFY_USER_ID="***REMOVED***",
+        CLIENT_ID="***REMOVED***",
+        CLIENT_SECRET="***REMOVED***",
+        REFRESH_TOKEN="***REMOVED***",
     )
 
     hashids = Hashids(app)

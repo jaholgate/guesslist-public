@@ -1,6 +1,15 @@
-from flask import Blueprint, flash, g, redirect, render_template, request, url_for
-import requests
+from flask import (
+    Blueprint,
+    current_app,
+    flash,
+    g,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 import base64
+import requests
 import random
 from werkzeug.exceptions import abort
 
@@ -17,16 +26,6 @@ from guesslist.utilities import (
 )
 
 bp = Blueprint("round", __name__, url_prefix="/round")
-
-# TODO Store this stuff somewhere else
-BASE_URL = "https://api.spotify.com/v1/"
-SPOTIFY_USER_ID = "***REMOVED***"
-CLIENT_ID = "***REMOVED***"
-CLIENT_SECRET = "***REMOVED***"
-REFRESH_TOKEN = "***REMOVED***"
-CLIENT_ID_SECRET_B64 = (
-    "Basic " + base64.b64encode((CLIENT_ID + ":" + CLIENT_SECRET).encode()).decode()
-)
 
 
 @bp.route("/add", methods=("GET", "POST"))
@@ -170,12 +169,27 @@ def view(id):
 
 
 def refresh_access_token():
-    headers = {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": CLIENT_ID_SECRET_B64,
-    }
+    with current_app.app_context():
+        CLIENT_ID_SECRET_B64 = (
+            "Basic "
+            + base64.b64encode(
+                (
+                    current_app.config["CLIENT_ID"]
+                    + ":"
+                    + current_app.config["CLIENT_SECRET"]
+                ).encode()
+            ).decode()
+        )
 
-    data = {"grant_type": "refresh_token", "refresh_token": REFRESH_TOKEN}
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Authorization": CLIENT_ID_SECRET_B64,
+        }
+
+        data = {
+            "grant_type": "refresh_token",
+            "refresh_token": current_app.config["REFRESH_TOKEN"],
+        }
 
     # POST request to Spotify API to request new access token. Format response as JSON
     r = requests.post(
@@ -225,7 +239,7 @@ def submit(id):
         else:
             # Get new access token for Spotify
             access_token = refresh_access_token()
-
+            BASE_URL = "https://api.spotify.com/v1/"
             headers = {"Authorization": "Bearer {token}".format(token=access_token)}
 
             # GET track info from Spotify. Format response as JSON
