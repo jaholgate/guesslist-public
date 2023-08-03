@@ -2,28 +2,20 @@ import os
 
 from flask import Flask
 from flask_hashids import HashidMixin, Hashids
+from flask_mail import Mail
 
 hashids = Hashids()
+mail = Mail()
 
 
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(
-        SECRET_KEY="dev",
-        DATABASE=os.path.join(app.instance_path, "guesslist.sqlite"),
-        HASHIDS_ALPHABET="ABCDEFGHIJKLMNPQRSTUVWXYZ123456789",
-        HASHIDS_MIN_LENGTH="6",
-        HASHIDS_SALT="music for chameleons",
-        SPOTIFY_USER_ID="***REMOVED***",
-        CLIENT_ID="***REMOVED***",
-        CLIENT_SECRET="***REMOVED***",
-        REFRESH_TOKEN="***REMOVED***",
-    )
+    app.config.from_mapping()
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
-        app.config.from_pyfile("config.py", silent=True)
+        app.config.from_pyfile("config.py", silent=False)
     else:
         # load the test config if passed in
         app.config.from_mapping(test_config)
@@ -35,6 +27,7 @@ def create_app(test_config=None):
         pass
 
     hashids.init_app(app)
+    mail.init_app(app)
 
     from . import db
 

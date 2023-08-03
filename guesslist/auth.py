@@ -15,7 +15,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from guesslist import hashids
 from guesslist.db import get_db
-from guesslist.utilities import join_club
+from guesslist.utilities import join_club, send_mail
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -86,6 +86,14 @@ def login():
         if error is None:
             session.clear()
             session["user_id"] = user["id"]
+            send_mail(
+                "Welcome",
+                "<h1>Welcome to guesslist</h1>"
+                + "<p><a href="
+                + request.host_url
+                + ">Open guesslist</a></p>",
+                [user["email"]],
+            )
             return redirect(url_for("index"))
 
         flash(error)

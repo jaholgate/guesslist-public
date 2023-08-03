@@ -1,5 +1,12 @@
 from flask import current_app, g
+from flask_mail import Message
+from guesslist import mail
 from guesslist.db import get_db
+
+
+def send_mail(subject, html, recipients):
+    msg = Message(subject=subject, html=html, recipients=recipients)
+    mail.send(msg)
 
 
 def get_club(club_id):
