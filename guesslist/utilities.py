@@ -1,4 +1,7 @@
-from flask import current_app, g
+import base64
+import requests
+
+from flask import g, current_app
 from flask_mail import Message
 from guesslist import mail
 from guesslist.db import get_db
@@ -7,6 +10,36 @@ from guesslist.db import get_db
 def send_mail(subject, html, recipients):
     msg = Message(subject=subject, html=html, recipients=recipients)
     mail.send(msg)
+
+
+def refresh_access_token():
+    with current_app.app_context():
+        SPOTIFY_CLIENT_ID_SECRET_B64 = (
+            "Basic "
+            + base64.b64encode(
+                (
+                    current_app.config["SPOTIFY_CLIENT_ID"]
+                    + ":"
+                    + current_app.config["SPOTIFY_CLIENT_SECRET"]
+                ).encode()
+            ).decode()
+        )
+
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Authorization": SPOTIFY_CLIENT_ID_SECRET_B64,
+        }
+
+        data = {
+            "grant_type": "refresh_token",
+            "refresh_token": current_app.config["SPOTIFY_REFRESH_TOKEN"],
+        }
+
+    # POST request to Spotify API to request new access token. Format response as JSON
+    r = requests.post(
+        "https://accounts.spotify.com/api/token", headers=headers, data=data
+    ).json()
+    return r["access_token"]
 
 
 def get_club(club_id):
@@ -35,6 +68,14 @@ def get_club_users_count(round_id):
         "SELECT COUNT(*) FROM user WHERE club_id = ?", (g.user["club_id"],)
     ).fetchone()["COUNT(*)"]
     return club_users_count
+
+
+def get_club_users():
+    db = get_db()
+    club_users = db.execute(
+        "SELECT * FROM user WHERE club_id = ?", (g.user["club_id"],)
+    ).fetchall()
+    return club_users
 
 
 def get_round(round_id):

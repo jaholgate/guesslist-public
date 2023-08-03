@@ -149,14 +149,14 @@ def manage(id):
     return render_template("club/manage.html", club=club, rounds=rounds)
 
 
-@bp.route("/<int:id>/delete", methods=("POST",))
-@login_required
-def delete(id):
-    get_club(id)
-    if g.user["id"] != club["admin_id"]:
-        return redirect(url_for("index.index"))
-    db = get_db()
-    db.execute("DELETE FROM club WHERE id = ?", (id,))
-    # TODO remove club_id from all users in club?
-    db.commit()
-    return redirect(url_for("index.index"))
+# @bp.route("/<int:id>/delete", methods=("POST",))
+# @login_required
+# def delete(id):
+#     get_club(id)
+#     if g.user["id"] != club["admin_id"]:
+#         return redirect(url_for("index.index"))
+#     db = get_db()
+#     db.execute("DELETE FROM club WHERE id = ?", (id,))
+#     # TODO remove club_id from all users in club?
+#     db.commit()
+#     return redirect(url_for("index.index"))

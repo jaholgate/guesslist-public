@@ -8,7 +8,6 @@ from flask import (
     request,
     url_for,
 )
-import base64
 import requests
 import random
 from werkzeug.exceptions import abort
@@ -19,10 +18,13 @@ from guesslist.utilities import (
     get_club,
     get_round,
     get_round_status,
+    get_club_users,
     get_club_users_count,
     get_song_count,
     get_songs_this_round,
     get_user_guess_count,
+    send_mail,
+    refresh_access_token,
 )
 
 bp = Blueprint("round", __name__, url_prefix="/round")
@@ -95,9 +97,7 @@ def view(id):
     # If users = songs (everyone has submitted)
     if get_round_status(round_id) == "open_for_guesses":
         # Get users
-        users = db.execute(
-            "SELECT id, username FROM user WHERE club_id = ?", (g.user["club_id"],)
-        ).fetchall()
+        users = get_club_users()
 
         # Get songs submitted by other users
         songs_except_own = db.execute(
@@ -166,36 +166,6 @@ def view(id):
         club_users_count=club_users_count,
         user_guess_count=user_guess_count,
     )
-
-
-def refresh_access_token():
-    with current_app.app_context():
-        CLIENT_ID_SECRET_B64 = (
-            "Basic "
-            + base64.b64encode(
-                (
-                    current_app.config["CLIENT_ID"]
-                    + ":"
-                    + current_app.config["CLIENT_SECRET"]
-                ).encode()
-            ).decode()
-        )
-
-        headers = {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Authorization": CLIENT_ID_SECRET_B64,
-        }
-
-        data = {
-            "grant_type": "refresh_token",
-            "refresh_token": current_app.config["REFRESH_TOKEN"],
-        }
-
-    # POST request to Spotify API to request new access token. Format response as JSON
-    r = requests.post(
-        "https://accounts.spotify.com/api/token", headers=headers, data=data
-    ).json()
-    return r["access_token"]
 
 
 @bp.route("/<int:id>/submit", methods=["POST"])
@@ -350,6 +320,15 @@ def submit(id):
                 )
                 db.commit()
 
+                users = get_club_users()
+
+                for user in users:
+                    send_mail(
+                        f"New playlist ready: {round_name}",
+                        f"<p><a href='{request.host_url}'>Open guesslist</a> to listen to the playlist and submit your guesses.</p>",
+                        [user["email"]],
+                    )
+
             return redirect(url_for("round.view", id=round_id))
 
 
@@ -435,9 +414,7 @@ def guess(id):
             # Update scores
 
             # Get users
-            users = db.execute(
-                "SELECT id FROM user WHERE club_id = ?", (g.user["club_id"],)
-            ).fetchall()
+            users = get_club_users()
 
             # For each user
             for user in users:
@@ -453,6 +430,14 @@ def guess(id):
                     (round_points, user_id),
                 )
                 db.commit()
+
+                round_name = get_round(round_id)["name"]
+
+                send_mail(
+                    f"The guesses are in: {round_name}",
+                    f"<p><a href='{request.host_url}'>Open guesslist</a> to see how you did, and submit your song for the next round.</p>",
+                    [user["email"]],
+                )
 
             # Open next round
             # Get ID of next round with status 'pending'
@@ -486,6 +471,14 @@ def start(id):
         (0, club_id),
     )
     db.commit()
+
+    users = get_club_users()
+    for user in users:
+        send_mail(
+            f"The first round is starting!",
+            f"<p><a href='{request.host_url}'>Open guesslist</a> to submit your song.</p>",
+            [user["email"]],
+        )
 
     return redirect(url_for("index.index"))
 
