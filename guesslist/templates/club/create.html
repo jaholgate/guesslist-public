@@ -12,10 +12,12 @@
         <form method="post">
             <label class="block" for="name">Club name</label>
             <input class="form-input w-full rounded-lg mt-2 text-slate-800"
+                   type="text"
                    name="name"
                    id="name"
                    value="{{ request.form['name'] }}"
-                   required />
+                   required
+                   maxlength="30" />
             <input class="btn-primary w-full mt-6" type="submit" value="Create" />
         </form>
     </div>

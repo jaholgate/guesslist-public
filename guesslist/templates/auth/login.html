@@ -10,14 +10,18 @@
     <form class="mt-6" method="post">
         <label class="block mt-2" for="email">Email address</label>
         <input class="form-input w-full rounded-lg mt-2 text-slate-800"
+               type="email"
                name="email"
                id="email"
+               maxlength="255"
                required />
         <label class="block mt-4" for="password">Password</label>
         <input class="form-input w-full rounded-lg mt-2 text-slate-800"
                type="password"
                name="password"
                id="password"
+               minlength="8"
+               maxlength="255"
                required />
         <input class="btn-primary w-full my-6" type="submit" value="Log in" />
     </form>

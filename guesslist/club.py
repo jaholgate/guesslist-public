@@ -87,6 +87,7 @@ def create():
 def join():
     if request.method == "POST":
         club_id = request.form["club_id"]
+        # TODO add hashid decoding
         error = None
 
         if not club_id:

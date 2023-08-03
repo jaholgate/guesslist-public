@@ -61,16 +61,20 @@
             <form action="{{ url_for('round.submit', id=round['id']) }}" method="post">
                 <label class="block mt-4" for="spotify_track_url">Spotify track URL</label>
                 <input class="form-input w-full rounded-lg mt-2 text-slate-800"
+                       type="text"
                        name="spotify_track_url"
                        id="spotify_track_url"
                        value="{{ request.form['spotify_track_url'] }}"
+                       maxlength="255"
                        required />
                 <p class="text-xs mt-2">E.g. https://open.spotify.com/track/7igDDKaYTMkV5xbse143IW</p>
                 <label class="block mt-4" for="comment">Comment</label>
                 <input class="form-input w-full rounded-lg mt-2 text-slate-800"
+                       type="text"
                        name="comment"
                        id="comment"
-                       value="{{ request.form['comment'] }}" />
+                       value="{{ request.form['comment'] }}"
+                       maxlength="255" />
                 <input class="btn-primary mt-4 w-full" type="submit" value="Submit" />
             </form>
         </div>
@@ -114,7 +118,8 @@
                         <label class="block mt-4 mb-2" for="comment">Comment</label>
                         <input class="form-input w-full text-slate-800 rounded-lg guess-form__input"
                                type="text"
-                               name="comment" />
+                               name="comment"
+                               maxlength="255" />
                         <input class="guess-form__input--all-values"
                                type="hidden"
                                name="{{ loop.index }}"

@@ -20,16 +20,20 @@
             <form method="post">
                 <label class="mt-4 block" for="name">Round name</label>
                 <input class="form-input w-full rounded-lg mt-2 text-slate-800"
+                       type="text"
                        name="name"
                        id="name"
                        value="{{ request.form['name'] }}"
-                       required />
+                       required
+                       maxlength="30" />
                 <label class="mt-4 block" for="description">Round description</label>
                 <input class="form-input w-full rounded-lg mt-2 text-slate-800"
+                       type="text"
                        name="description"
                        id="description"
                        value="{{ request.form['description'] }}"
-                       required />
+                       required
+                       maxlength="255" />
                 <input class="btn-primary w-full mt-6" type="submit" value="Save" />
             </form>
         </div>

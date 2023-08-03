@@ -14,16 +14,20 @@
         <form action="{{ url_for('round.add', id=club['id']) }}" method="post">
             <label class="block mt-4" for="name">Name</label>
             <input class="form-input w-full rounded-lg mt-2 text-slate-800"
+                   type="text"
                    name="name"
                    id="name"
                    value="{{ request.form['name'] }}"
-                   required />
+                   required
+                   maxlength="30" />
             <label class="mt-4 block" for="description">Description</label>
             <input class="form-input w-full rounded-lg mt-2 text-slate-800"
+                   type="text"
                    name="description"
                    id="description"
                    value="{{ request.form['description'] }}"
-                   required />
+                   required
+                   maxlength="255" />
             <input class="btn-primary w-full mt-6" type="submit" value="Add" />
         </form>
     </div>
@@ -32,11 +36,13 @@
         <form method="post">
             <label class="block mt-4" for="title">Club name</label>
             <input class="form-input w-full rounded-lg mt-2 text-slate-800"
+                   type="text"
                    name="name"
                    id="name"
                    placeholder="{{ club.name }}"
                    value="{{ request.form['name'] }}"
-                   required />
+                   required
+                   maxlength="30" />
             <input class="btn-primary w-full mt-6" type="submit" value="Save" />
         </form>
     </div>
