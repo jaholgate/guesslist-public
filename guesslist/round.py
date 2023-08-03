@@ -333,6 +333,15 @@ def submit(id):
                     headers=headers,
                 )
 
+                # TODO unfollow playlist once done (doesn't delete the playlist itself from Spotify)
+                # https://developer.spotify.com/documentation/web-api/reference/unfollow-playlist
+                # headers = {"Authorization": "Bearer {token}".format(token=access_token)}
+
+                # r = requests.delete(
+                #     BASE_URL + "playlists/" + playlist_id + "followers",
+                #     headers=headers,
+                # )
+
                 # Add the playlist URL to the round in the database
                 db = get_db()
                 db.execute(
