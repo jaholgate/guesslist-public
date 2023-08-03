@@ -3,6 +3,8 @@ import os
 from flask import Flask
 from flask_hashids import HashidMixin, Hashids
 
+hashids = Hashids()
+
 
 def create_app(test_config=None):
     # create and configure the app
@@ -19,8 +21,6 @@ def create_app(test_config=None):
         REFRESH_TOKEN="***REMOVED***",
     )
 
-    hashids = Hashids(app)
-
     if test_config is None:
         # load the instance config, if it exists, when not testing
         app.config.from_pyfile("config.py", silent=True)
@@ -33,6 +33,8 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
+
+    hashids.init_app(app)
 
     from . import db
 

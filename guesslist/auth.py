@@ -13,6 +13,7 @@ from flask import (
 
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from guesslist import hashids
 from guesslist.db import get_db
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
@@ -24,8 +25,9 @@ def register():
         email = request.form["email"]
         username = request.form["username"]
         password = request.form["password"]
-        club_id = request.form["club_id"]
-        # TODO add hashid decoding
+        # User will pass in a hashid - 6-character code e.g. ABC123 so we need to decode it
+        club_id = hashids.decode(request.form["club_id"])
+
         error = None
 
         if not email:

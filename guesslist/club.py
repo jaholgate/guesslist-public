@@ -1,6 +1,7 @@
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for
 from werkzeug.exceptions import abort
 
+from guesslist import hashids
 from guesslist.auth import login_required
 from guesslist.db import get_db
 from guesslist.utilities import get_club, get_rounds
@@ -86,8 +87,8 @@ def create():
 @login_required
 def join():
     if request.method == "POST":
-        club_id = request.form["club_id"]
-        # TODO add hashid decoding
+        # User will pass in a hashid - 6-character code e.g. ABC123 so we need to decode it
+        club_id = hashids.decode(request.form["club_id"])
         error = None
 
         if not club_id:

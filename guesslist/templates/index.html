@@ -43,7 +43,7 @@
                 <h3 class="text-xl">Invite friends</h3>
                 {% if club_users_count < 3 %}<p>To start the game, the club needs at least three members.</p>{% endif %}
                 <p class="mt-2">Share your club invite link:</p>
-                <p>/register</p>
+                <a class="text-teal-400" href="{{ club_invite_link }}">{{ club_invite_link }}</a>
                 {% if club_users_count >= 3 %}
                     {% if g.user['id'] == club['admin_id'] %}
                         <h3 class="text-xl mt-6">Start game</h3>
