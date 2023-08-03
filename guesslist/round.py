@@ -18,6 +18,8 @@ from guesslist.utilities import (
     get_club,
     get_round,
     get_round_status,
+    get_rounds_pending,
+    get_rounds_open,
     get_club_users,
     get_club_users_count,
     get_song_count,
@@ -445,12 +447,13 @@ def guess(id):
                 "SELECT id FROM round WHERE status = ? AND club_id = ?",
                 ("pending", club_id),
             ).fetchone()["id"]
-            # Update round status
-            db.execute(
-                "UPDATE round SET status = ?" " WHERE id = ?",
-                ("open_for_songs", next_round_id),
-            )
-            db.commit()
+            if next_round_id:
+                # Update round status
+                db.execute(
+                    "UPDATE round SET status = ?" " WHERE id = ?",
+                    ("open_for_songs", next_round_id),
+                )
+                db.commit()
 
         return redirect(url_for("round.view", id=round_id))
 
@@ -486,7 +489,8 @@ def start(id):
 @bp.route("/<hashid:id>/manage", methods=("GET", "POST"))
 @login_required
 def manage(id):
-    round = get_round(id)
+    round_id = id
+    round = get_round(round_id)
 
     if request.method == "POST":
         name = request.form["name"]
@@ -506,12 +510,40 @@ def manage(id):
             db = get_db()
             db.execute(
                 "UPDATE round SET name = ?, description = ?" " WHERE id = ?",
-                (name, description, id),
+                (name, description, round_id),
             )
             db.commit()
             return redirect(url_for("index.index"))
 
-    return render_template("round/manage.html", round=round)
+    rounds_open = get_rounds_open()
+    rounds_pending = get_rounds_pending()
+    # If there are no open rounds in the club and this is the next pending round, pass this to the template so we can show 'open round' button
+    if not rounds_open and rounds_pending[0]["id"] == round_id:
+        is_next_round = True
+
+        return render_template(
+            "round/manage.html", round=round, is_next_round=is_next_round
+        )
+    else:
+        return render_template("round/manage.html", round=round)
+
+
+@bp.route("/<hashid:id>/open")
+@login_required
+def open(id):
+    round = get_round(id)
+
+    if round["status"] == "pending":
+        db = get_db()
+        db.execute(
+            "UPDATE round SET status = ?" " WHERE id = ?",
+            ("open_for_songs", id),
+        )
+        db.commit()
+        return redirect(url_for("index.index"))
+
+    else:
+        return render_template("round/manage.html", round=round)
 
 
 @bp.route("/<hashid:id>/delete", methods=("POST",))

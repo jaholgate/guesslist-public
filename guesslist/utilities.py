@@ -103,6 +103,24 @@ def get_rounds():
     return rounds
 
 
+def get_rounds_pending():
+    db = get_db()
+    rounds = db.execute(
+        "SELECT * FROM round WHERE club_id = ? AND status = ?",
+        (g.user["club_id"], "pending"),
+    ).fetchall()
+    return rounds
+
+
+def get_rounds_open():
+    db = get_db()
+    rounds = db.execute(
+        "SELECT * FROM round WHERE club_id = ? AND status LIKE ?",
+        (g.user["club_id"], "open%"),
+    ).fetchall()
+    return rounds
+
+
 def get_round_status(round_id):
     db = get_db()
     round_status = db.execute(

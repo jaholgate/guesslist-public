@@ -4,8 +4,7 @@ from werkzeug.exceptions import abort
 from guesslist import hashids
 from guesslist.auth import login_required
 from guesslist.db import get_db
-from guesslist.utilities import get_club, get_club_users_count
-from guesslist.utilities import get_rounds
+from guesslist.utilities import get_club, get_club_users_count, get_rounds
 
 bp = Blueprint("index", __name__)
 
