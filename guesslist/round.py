@@ -517,8 +517,13 @@ def manage(id):
 
     rounds_open = get_rounds_open()
     rounds_pending = get_rounds_pending()
-    # If there are no open rounds in the club and this is the next pending round, pass this to the template so we can show 'open round' button
-    if not rounds_open and rounds_pending[0]["id"] == round_id:
+    club_accepting_members = get_club(g.user["id"])["accepting_members"]
+    # If this is the next pending round (there are no open rounds in the club and the club is not accepting members i.e. game has started previously), pass this to the template so we can show 'open round' button
+    if (
+        not rounds_open
+        and rounds_pending[0]["id"] == round_id
+        and club_accepting_members == 0
+    ):
         is_next_round = True
 
         return render_template(
