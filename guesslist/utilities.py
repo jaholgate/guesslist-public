@@ -1,15 +1,22 @@
 import base64
 import requests
+from threading import Thread
 
-from flask import g, current_app
+from flask import g, current_app, copy_current_request_context
 from flask_mail import Message
 from guesslist import mail
 from guesslist.db import get_db
 
 
 def send_mail(subject, html, recipients):
-    msg = Message(subject=subject, html=html, recipients=recipients)
-    mail.send(msg)
+    message = Message(subject=subject, html=html, recipients=recipients)
+
+    @copy_current_request_context
+    def send_message(message):
+        mail.send(message)
+
+    sender = Thread(name="mail_sender", target=send_message, args=(message,))
+    sender.start()
 
 
 def refresh_access_token():
