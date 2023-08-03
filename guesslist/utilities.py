@@ -99,3 +99,34 @@ def get_guess_count(round_id):
         (g.user["club_id"], round_id),
     ).fetchone()["COUNT(*)"]
     return guess_count
+
+
+def join_club(club_id, user_id, source):
+    # Check if club id exists
+    db = get_db()
+    error = None
+    club_id_check = db.execute(
+        "SELECT id, accepting_members FROM club WHERE id = ?",
+        (club_id,),
+    ).fetchone()
+    if not club_id_check:
+        # Set relevant error message depending on what page they are joining from
+        if source == "register":
+            error = "Successfully registered, but your club ID was not found."
+        else:
+            error = "Club ID was not found."
+    elif club_id_check["accepting_members"] == 0:
+        error = "The club you entered is not accepting members."
+    else:
+        # If true, add club_id to user record
+        db.execute(
+            "UPDATE user SET club_id = ?" " WHERE id = ?",
+            (club_id, user_id),
+        )
+        db.commit()
+
+    if error is not None:
+        flash(error)
+
+    else:
+        return

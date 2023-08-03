@@ -4,7 +4,7 @@ from werkzeug.exceptions import abort
 from guesslist import hashids
 from guesslist.auth import login_required
 from guesslist.db import get_db
-from guesslist.utilities import get_club, get_rounds
+from guesslist.utilities import get_club, get_rounds, join_club
 from guesslist.round import add_round
 
 bp = Blueprint("club", __name__, url_prefix="/club")
@@ -92,7 +92,7 @@ def join():
         error = None
 
         if not club_id:
-            error = "Club ID is required."
+            error = "Club ID not found."
 
         if g.user["club_id"]:
             error = "You are already in a club."
@@ -100,30 +100,8 @@ def join():
         if error is not None:
             flash(error)
         else:
-            # TODO: refactor this, as it is repeated in auth.py
-            # Check if club id exists
-            db = get_db()
-            club_id_check = db.execute(
-                "SELECT id, accepting_members FROM club WHERE id = ?",
-                (club_id,),
-            ).fetchone()
-            if not club_id_check:
-                error = "Club ID was not found."
-            elif club_id_check["accepting_members"] == 0:
-                error = "The club you entered is not accepting members."
-            else:
-                # If true, add club_id to user record
-                db.execute(
-                    "UPDATE user SET club_id = ?" " WHERE id = ?",
-                    (club_id, g.user["id"]),
-                )
-                db.commit()
-
-            if error is not None:
-                flash(error)
-
-            else:
-                return redirect(url_for("index.index"))
+            join_club(club_id, g.user["id"], "join")
+            return redirect(url_for("index"))
 
     return render_template("club/join.html")
 

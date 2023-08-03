@@ -15,6 +15,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from guesslist import hashids
 from guesslist.db import get_db
+from guesslist.utilities import join_club
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -25,8 +26,8 @@ def register():
         email = request.form["email"]
         username = request.form["username"]
         password = request.form["password"]
-        # User will pass in a hashid - 6-character code e.g. ABC123 so we need to decode it
-        club_id = hashids.decode(request.form["club_id"])
+        # User will pass in a hashid - 6-character code e.g. ABC123 so we need to decode it.
+        club_id = hashids.decode(request.form["club"])
 
         error = None
 
@@ -52,27 +53,9 @@ def register():
                     "SELECT * FROM user WHERE email = ?", (email,)
                 ).fetchone()
 
-                # If the user registered with a club id
+                # If the user registered with a club id, add club id to user i.e. join that club
                 if club_id:
-                    # TODO: refactor this, as it is repeated in club.py
-                    # Check if club id exists
-                    club_id_check = db.execute(
-                        "SELECT id, accepting_members FROM club WHERE id = ?",
-                        (club_id,),
-                    ).fetchone()
-                    if not club_id_check:
-                        error = (
-                            "Successfully registered, but your club ID was not found."
-                        )
-                    elif club_id_check["accepting_members"] == 0:
-                        error = "Successfully registered, but the club you entered is not accepting members."
-                    else:
-                        # If true, add club_id to user record
-                        db.execute(
-                            "UPDATE user SET club_id = ?" " WHERE id = ?",
-                            (club_id, user["id"]),
-                        )
-                        db.commit()
+                    join_club(club_id, user["id"], "register")
 
                 # Log the user in
                 session.clear()

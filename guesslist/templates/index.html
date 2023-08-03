@@ -42,60 +42,64 @@
             <div class="bg-slate-700 mt-4 p-4 rounded-lg">
                 <h3 class="text-xl">Invite friends</h3>
                 {% if club_users_count < 3 %}<p>To start the game, the club needs at least three members.</p>{% endif %}
-                <p class="mt-2">Share your club invite link:</p>
-                <a class="text-teal-400" href="{{ club_invite_link }}">{{ club_invite_link }}</a>
-                {% if club_users_count >= 3 %}
-                    {% if g.user['id'] == club['admin_id'] %}
-                        <h3 class="text-xl mt-6">Start game</h3>
-                        <ul class="mt-4 ml-4 list-disc list-outside">
-                            <li>The first round will open for song submissions.</li>
-                            <li>Each round will open when the previous one is completed.</li>
-                            <li class="font-bold">New members will not be able to join the club. Make sure everyone is in!</li>
-                        </ul>
-                        <a class="btn-primary w-full mt-4"
-                           href="{{ url_for('round.start', id=rounds[0]['id']) }}">Start game</a>
-                    {% else %}
-                        <p class="mt-2">Waiting for the club owner to start the game...</p>
-                    {% endif %}
+                <p class="mt-2">
+                    Your club ID: <span class="font-bold">{{ club_id_hashed }}
+                </p>
+            </span>
+            <p class="mt-2">Share your club invite link:</p>
+            <a class="text-teal-400" href="{{ club_invite_link }}">{{ club_invite_link }}</a>
+            {% if club_users_count >= 3 %}
+                {% if g.user['id'] == club['admin_id'] %}
+                    <h3 class="text-xl mt-6">Start game</h3>
+                    <ul class="mt-4 ml-4 list-disc list-outside">
+                        <li>The first round will open for song submissions.</li>
+                        <li>Each round will open when the previous one is completed.</li>
+                        <li class="font-bold">New members will not be able to join the club. Make sure everyone is in!</li>
+                    </ul>
+                    <a class="btn-primary w-full mt-4"
+                       href="{{ url_for('round.start', id=rounds[0]['id']) }}">Start game</a>
+                {% else %}
+                    <p class="mt-2">Waiting for the club owner to start the game...</p>
                 {% endif %}
-            </div>
-        {% endif %}
-        <!-- If club admin -->
-        <ul class="flex flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0 mt-6">
+            {% endif %}
+        </div>
+    {% endif %}
+    <!-- If club admin -->
+    <ul class="flex flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0 mt-6">
+        <li class="grow">
+            <a class="btn-primary"
+               href="{{ url_for('club.leaderboard', id=club['id']) }}">Leaderboard</a>
+        </li>
+        {% if g.user['id'] == club['admin_id'] %}
             <li class="grow">
                 <a class="btn-primary"
-                   href="{{ url_for('club.leaderboard', id=club['id']) }}">Leaderboard</a>
+                   href="{{ url_for('club.manage', id=club['id']) }}">Manage club</a>
             </li>
-            {% if g.user['id'] == club['admin_id'] %}
-                <li class="grow">
-                    <a class="btn-primary"
-                       href="{{ url_for('club.manage', id=club['id']) }}">Manage club</a>
-                </li>
-            {% endif %}
-        </ul>
-        {% if rounds %}
-            <h3 class="text-xl mt-6">Rounds</h3>
-            <ol class="list-decimal list-inside">
-                {% for round in rounds %}
-                    <a class="block" href="{{ url_for('round.view', id=round['id']) }}">
-                        <li class="bg-slate-700 hover:bg-slate-600 p-4 mt-4 rounded-lg text-xl">
-                            <h4 class="inline -ml-1">{{ round['name'] }}</h4>
-                            <p class="text-base">{{ round['description'] }}</p>
-                            <p class="text-sm text-slate-300 mt-2">
-                                {% if round['status'] == 'pending' %}
-                                    Upcoming
-                                {% elif round['status'] == 'open_for_songs' %}
-                                    Open - waiting for songs
-                                {% elif round['status'] == 'open_for_guesses' %}
-                                    Open - waiting for guesses
-                                {% elif round['status'] == 'complete' %}
-                                    Complete
-                                {% endif %}
-                            </p>
-                        </li>
-                    </a>
-                {% endfor %}
-            </ol>
         {% endif %}
+    </ul>
+    {% if rounds %}
+        <h3 class="text-xl mt-6">Rounds</h3>
+        <ol class="list-decimal list-inside">
+            {% for round in rounds %}
+                <a class="block" href="{{ url_for('round.view', id=round['id']) }}">
+                    <li class="bg-slate-700 hover:bg-slate-600 p-4 mt-4 rounded-lg text-xl">
+                        <h4 class="inline -ml-1">{{ round['name'] }}</h4>
+                        <p class="text-base">{{ round['description'] }}</p>
+                        <p class="text-sm text-slate-300 mt-2">
+                            {% if round['status'] == 'pending' %}
+                                Upcoming
+                            {% elif round['status'] == 'open_for_songs' %}
+                                Open - waiting for songs
+                            {% elif round['status'] == 'open_for_guesses' %}
+                                Open - waiting for guesses
+                            {% elif round['status'] == 'complete' %}
+                                Complete
+                            {% endif %}
+                        </p>
+                    </li>
+                </a>
+            {% endfor %}
+        </ol>
     {% endif %}
+{% endif %}
 {% endblock content %}
