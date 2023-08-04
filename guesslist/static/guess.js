@@ -1,7 +1,6 @@
 // On button click
 document.querySelector('.guess-form__button').addEventListener('click', function (event) {
 	event.preventDefault();
-	// TODO ensure guesses are unique
 	let guessesValid = true;
 	let values = [];
 	const guessInputs = document.querySelectorAll('.guess-form__input.select');
