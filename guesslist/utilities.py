@@ -1,11 +1,34 @@
 import base64
 import requests
 from threading import Thread
+from time import time
+import jwt
 
 from flask import g, current_app, copy_current_request_context
 from flask_mail import Message
 from guesslist import mail
 from guesslist.db import get_db
+
+
+def get_reset_token(username, expires=500):
+    with current_app.app_context():
+        return jwt.encode(
+            {"reset_password": username, "exp": time() + expires},
+            key=current_app.config["SECRET_KEY"],
+        )
+
+
+def verify_reset_token(token):
+    with current_app.app_context():
+        try:
+            username = jwt.decode(
+                token, algorithms=["HS256"], key=current_app.config["SECRET_KEY"]
+            )["reset_password"]
+        except Exception as e:
+            print(e)
+            return
+
+        return get_user(username)
 
 
 def send_mail(subject, html, recipients):
@@ -75,6 +98,12 @@ def get_club_users_count(round_id):
         "SELECT COUNT(*) FROM user WHERE club_id = ?", (g.user["club_id"],)
     ).fetchone()["COUNT(*)"]
     return club_users_count
+
+
+def get_user(username):
+    db = get_db()
+    user = db.execute("SELECT * FROM user WHERE username = ?", (username,)).fetchone()
+    return user
 
 
 def get_club_users():
