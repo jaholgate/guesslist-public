@@ -109,7 +109,8 @@
                                value="{{ song['id'] }}" />
                         <label class="block mt-4 mb-2" for="user-id">Who submitted this?</label>
                         <select class="select w-full rounded-lg text-slate-800 guess-form__input"
-                                name="user-id">
+                                name="user-id"
+                                required>
                             <option class="text-slate-800" selected disabled>Select:</option>
                             {% for user in users %}
                                 {% if user['id'] != g.user['id'] %}<option class="text-slate-800">{{ user['username'] }}</option>{% endif %}
@@ -127,6 +128,10 @@
                     </fieldset>
                 </div>
             {% endfor %}
+            <div class="hidden border border-slate-400 rounded-lg p-4 mt-6 js-error">
+                <span class="inline-block bg-red-500 text-white font-bold rounded-full w-6 h-6 text-center mr-2">!</span>
+                <span class="inline-block js-error__text">Error text</span>
+            </div>
             <button class="btn-primary mt-6 w-full guess-form__button">Submit guesses</button>
         </form>
         <script type="text/javascript" src="/static/guess.js"></script>
