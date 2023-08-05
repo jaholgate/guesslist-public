@@ -218,8 +218,6 @@ def submit(id):
             # GET track info from Spotify. Format response as JSON
             r = requests.get(BASE_URL + "tracks/" + spotify_track_id, headers=headers)
 
-            print(r.status_code)
-
             if r.status_code != 200:
                 error = "Track not found. Please make sure you entered a valid Spotify track URL."
                 flash(error)
