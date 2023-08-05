@@ -47,7 +47,7 @@
                 </p>
             </span>
             <p class="mt-2">Share your club invite link:</p>
-            <a class="text-teal-400 break-words" href="{{ club_invite_link }}">{{ club_invite_link }}</a>
+            <a class="text-teal-400" href="{{ club_invite_link }}">{{ club_invite_link }}</a>
             {% if club_users_count >= 3 %}
                 {% if rounds %}
                     {% if g.user['id'] == club['admin_id'] %}
