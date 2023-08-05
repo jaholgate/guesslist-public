@@ -1,1 +1,15 @@
 fly.toml
+
+# Below copied from .gitignore
+.venv/
+
+*.pyc
+__pycache__/
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+.vscode/
+
+tailwindcss
