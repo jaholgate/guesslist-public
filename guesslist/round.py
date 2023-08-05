@@ -216,9 +216,16 @@ def submit(id):
             headers = {"Authorization": "Bearer {token}".format(token=access_token)}
 
             # GET track info from Spotify. Format response as JSON
-            r = requests.get(
-                BASE_URL + "tracks/" + spotify_track_id, headers=headers
-            ).json()
+            r = requests.get(BASE_URL + "tracks/" + spotify_track_id, headers=headers)
+
+            print(r.status_code)
+
+            if r.status_code != 200:
+                error = "Track not found. Please make sure you entered a valid Spotify track URL."
+                flash(error)
+                return redirect(url_for("round.view", id=round_id))
+
+            r = r.json()
 
             # Add song to database
             db.execute(
