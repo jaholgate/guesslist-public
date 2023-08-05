@@ -344,7 +344,6 @@ def guess(id):
         db = get_db()
         error = None
 
-        print(data)
         # If user already guessed, reject
         user_already_guessed = db.execute(
             "SELECT id FROM guess WHERE user_id = ? AND round_id = ?",

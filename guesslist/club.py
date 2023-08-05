@@ -33,11 +33,9 @@ def create():
             clubs = db.execute(
                 "SELECT COUNT(*) FROM club",
             ).fetchone()["COUNT(*)"]
-            print(clubs)
 
             # If not, start round IDs from 1000 to avoid duplication of club IDs
             if clubs == 0:
-                print("updating seq")
                 db.execute(
                     "INSERT INTO sqlite_sequence (name, seq)" " VALUES (?, ?)",
                     ("round", 1000),
