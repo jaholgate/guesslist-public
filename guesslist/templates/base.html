@@ -39,7 +39,7 @@
             </ul>
         </nav>
     </header>
-    <main class="max-w-xl mx-auto bg-slate-800 p-4">
+    <main class="max-w-xl mx-auto bg-slate-800 p-4 pb-16">
         {% block header %}
         {% endblock header %}
         {% for message in get_flashed_messages() %}
@@ -48,4 +48,12 @@
         {% block content %}
         {% endblock content %}
     </main>
+    <!-- If logged-out -->
+    {% if request.path == '/' and not g.user %}
+        <footer class="fixed bottom-0 text-center bg-slate-950 w-full p-4 mt-10">
+            <p class="text-sm">
+                Built by <a class="text-teal-400" href="https://jamesholgate.co.uk">James Holgate</a> using Python/Flask and Spotify API
+            </p>
+        </footer>
+    {% endif %}
 </body>
